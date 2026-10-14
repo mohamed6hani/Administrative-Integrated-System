@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Administrative Integrated System</title>
+	<link rel="stylesheet" href="style.css">
+	<script src="/activity-core.js" defer></script>
+	<script src="/reference-runtime.js" defer></script>
+	<script src="/activity-overlays.js" defer></script>
+	<script src="/delete-approval-user-notice.js" defer></script>
+	
+</head>
+<body>
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+	<header class="page-header">
+		<div class="header-time-frame" aria-live="polite">
+			<span class="header-time-label">الوقت الآن</span>
+			<strong id="headerClock">
+				<span id="headerClockDate">----/--/--</span>
+				<span class="clock-separator" aria-hidden="true"></span>
+				<span id="headerClockTime">--:--</span>
+			</strong>
+		</div>
+		<div class="header-card">
+			<div class="header-container">
+				<button id="settingsBtn" type="button" class="action-btn settings-btn" title="الإعدادات">⚙</button>
+				<h3>جدول الأحراز</h3>
+				<button id="exitBtn" type="button" class="action-btn exit-btn">خروج</button>
+			</div>
+		</div>
+	</header>
+
+	<!-- Settings Sidebar -->
+	<div id="settingsSidebar" class="settings-sidebar">
+		<div class="sidebar-header">
+			<h3>الإعدادات</h3>
+			<button id="closeSidebarBtn" class="close-sidebar-btn">×</button>
+		</div>
+		<div class="sidebar-content">
+			<button id="companiesMBtn" type="button" class="sidebar-menu-btn">شركات المصادرة</button>
+			<button id="companiesHBtn" type="button" class="sidebar-menu-btn">شركات الحجز الاداري</button>
+			<button id="csvImportBtn" type="button" class="sidebar-menu-btn">استيراد CSV</button>
+		</div>
+	</div>
+	<div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+	<!-- Companies Modal -->
+	<div id="companiesModal" class="companies-modal">
+		<div class="companies-modal-content">
+			<div class="companies-modal-header">
+				<h3 id="companiesModalTitle">قائمة الشركات</h3>
+				<button id="closeCompaniesModal" class="close-modal-btn">×</button>
+			</div>
+			<div class="companies-modal-actions">
+				<button id="addCompanyBtn" type="button" class="action-btn add-btn">+ اضافة شركة</button>
+				<button id="exportCompaniesExcelBtn" type="button" class="action-btn export-btn">Excel</button>
+				<input type="text" id="companySearch" placeholder="بحث عن شركة..." class="company-search-input">
+			</div>
+			<div class="companies-table-wrapper">
+				<table id="companiesTable">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>اسم الشركة</th>
+							<th>حذف</th>
+						</tr>
+					</thead>
+					<tbody id="companiesTableBody"></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- Add Company Modal -->
+	<div id="addCompanyModal" class="add-company-modal">
+		<div class="add-company-content">
+			<h3>اضافة شركة جديدة</h3>
+			<input type="text" id="newCompanyName" placeholder="اسم الشركة">
+			<div id="addCompanyError" class="add-company-error"></div>
+			<div class="add-company-actions">
+				<button id="confirmAddCompany" type="button" class="action-btn add-btn">اضافة</button>
+				<button id="cancelAddCompany" type="button" class="action-btn ghost">الغاء</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Delete Confirmation Modal -->
+	<div id="deleteConfirmModal" class="delete-confirm-modal">
+		<div class="delete-confirm-content">
+			<h3>تأكيد الحذف</h3>
+			<p id="deleteConfirmMessage">هل أنت متأكد من حذف هذه الشركة؟</p>
+			<div class="delete-confirm-actions">
+				<button id="confirmDeleteBtn" type="button" class="action-btn delete-btn">حذف</button>
+				<button id="cancelDeleteBtn" type="button" class="action-btn ghost">الغاء</button>
+			</div>
+		</div>
+	</div>
+
+	<section class="filter-card">
+		<div class="filter-header">
+			<!-- Actions (Right) -->
+			<div class="filter-actions">
+				<button id="addRecordBtn" type="button" class="action-btn add-btn">+ إضافة</button>
+				<button id="deleteSelectedBtn" type="button" class="action-btn delete-btn" disabled>حذف المحدد</button>
+				<button id="undoBtn" type="button" class="action-btn undo-btn">استرجاع</button>
+				<button id="browserPrintBtn" type="button" class="action-btn export-btn">🖨️ طباعة</button>
+				<button id="reloadBtn" type="button" class="ghost">تحديث</button>
+				<button id="saveBtn" type="button">حفظ</button>
+				<span id="statusMsg" class="status" aria-live="polite"></span>
+			</div>
+
+			<!-- Sector Buttons (Center - Hanging Strips) -->
+			<div class="sector-strip"></div>
+
+			<!-- Stations Buttons (Left) -->
+			<div class="stations-panel">
+				<div id="stationsContainer" class="stations-list"></div>
+				<button type="button" class="clear-filter-btn" id="clearFilters" title="مسح التصفية">×</button>
+			</div>
+		</div>
+	</section>
+
+	<section class="table-card">
+		<div class="table-top-bar">
+			<div class="table-searches">
+				<label class="search-field">
+					<span>البحث</span>
+					<input type="text" id="nameSearch" placeholder="ابحث في كل الأعمدة">
+					<select id="nameSearchColumn" aria-label="تحديد عمود البحث">
+						<option value="__all__">كل الأعمدة</option>
+					</select>
+				</label>
+				<div class="record-search-box">
+					<label class="search-field">
+						<span>رقم الحرز</span>
+						<input type="text" id="recordSearch" placeholder="ابحث برقم الحرز">
+					</label>
+				</div>
+			</div>
+			<div class="table-top-right">
+				<div class="seize-type-filter">
+					<button type="button" class="seize-filter-btn seize-all active" data-seize="all">كل</button>
+					<button type="button" class="seize-filter-btn seize-admin" data-seize="حجز إدارى">حجز إدارى</button>
+					<button type="button" class="seize-filter-btn seize-confiscate" data-seize="مصادرة">مصادرة</button>
+					<button type="button" class="seize-filter-btn seize-exempt" data-seize="اعفاء">اعفاء</button>
+					<button type="button" class="seize-filter-btn seize-fees" data-seize="سداد رسوم">سداد رسوم</button>
+					<button type="button" class="seize-filter-btn seize-deposit" data-seize="ايداع">ايداع</button>
+					<button type="button" class="seize-filter-btn seize-waiver" data-seize="تنازل">تنازل</button>
+				</div>
+				<div id="depositStatusFilter" class="deposit-status-filter" hidden>
+					<button type="button" class="deposit-status-btn deposit-passed" data-deposit-pass="passed">تم المرور</button>
+					<button type="button" class="deposit-status-btn deposit-not-passed" data-deposit-pass="not-passed">لم يتم المرور</button>
+				</div>
+				<div class="pagination" aria-label="تقسيم الصفحات">
+					<button id="prevPage" type="button">السابق</button>
+					<button id="firstPage" type="button">الأول</button>
+					<span id="pageInfo">صفحة 1 من 1</span>
+					<button id="lastPage" type="button">الأخير</button>
+					<button id="nextPage" type="button">التالي</button>
+				</div>
+			</div>
+		</div>
+		<div class="table-wrapper">
+			<table id="harzTable">
+				<thead>
+					<tr>
+						<th class="checkbox-col"><input type="checkbox" id="selectAllCheckbox" title="تحديد الكل"></th>
+						<th class="row-index-col" aria-label="ترقيم">#</th>
+						<th>الفئة</th>
+						<th>رقم الحرز</th>
+						<th>رقم الرخصة</th>
+						<th>نوع الرخصة</th>
+						<th>القسم</th>
+						<th>الاسم</th>
+						<th>النوع</th>
+						<th>الماركة</th>
+						<th>العيار</th>
+						<th>الرقم</th>
+						<th>سبب الالغاء</th>
+						<th>تاريخ الايداع</th>
+						<th>تاريخ الانتهاء</th>
+						<th>مالك الحرز</th>
+						<th>نوع الحرز</th>
+						<th>ملاحظات</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- يتم ملء الصفوف عبر script.js -->
+				</tbody>
+			</table>
+			<p id="noDataMessage" class="no-data-message" hidden>لا يوجد بيانات</p>
+		</div>
+	</section>
+
+	<script src="seized-merge-save.js" defer></script>
+	<script src="script.js" defer></script>
+</body>
+</html>

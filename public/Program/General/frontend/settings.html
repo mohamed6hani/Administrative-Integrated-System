@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrative Integrated System</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="/activity-core.js" defer></script>
+  <script src="/reference-runtime.js" defer></script>
+  
+</head>
+<body class="office-theme light-mode settings-page">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+  <div class="ambient-light ambient-light-top"></div>
+  <div class="ambient-light ambient-light-bottom"></div>
+  <div class="floating-shape shape-1"></div>
+  <div class="floating-shape shape-2"></div>
+  <div class="floating-shape shape-3"></div>
+
+  <header class="office-header">
+    <div class="brand-group">
+      <h1 class="brand-title" dir="ltr">Administrative Integrated System</h1>
+      
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn ghost" data-profile-link>👤 الملف الشخصي</button>
+      <button type="button" class="btn ghost" onclick="window.location.href='main.html'">← العودة للرئيسية</button>
+      <button type="button" class="btn danger" onclick="logoutApp(event)">تسجيل الخروج</button>
+    </div>
+  </header>
+
+  <main class="office-main settings-layout">
+    <section class="glass-card settings-summary">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">حساب المدير</span>
+          <h2>معلومات الوصول</h2>
+        </div>
+      </header>
+      <div class="card-body">
+        <div class="summary-block">
+          <span class="summary-label">الاسم</span>
+          <span class="summary-value" id="userDisplayName">—</span>
+        </div>
+        <div class="summary-block">
+          <span class="summary-label">الدور</span>
+          <span class="summary-badge" id="userRoleBadge">مدير النظام</span>
+        </div>
+        <div class="summary-block">
+          <span class="summary-label">القطاع</span>
+          <span class="summary-value hidden" id="userSectorDetail"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card new-user-card">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">إضافة فرد</span>
+          <h2>إنشاء حساب جديد</h2>
+        </div>
+        <p>أنشئ حسابات جديدة للأفراد أو المدراء أو السكرتارية مع تحديد التطبيقات المسموح بها.</p>
+      </header>
+  <form id="newUserForm" class="form-grid" novalidate data-message-target="newUserMessage">
+        <div class="field-group">
+          <label class="field">
+            <span class="field-label">اسم المستخدم</span>
+            <div class="field-control">
+              <input type="text" name="username" placeholder="مثل: user01" autocomplete="off" required />
+            </div>
+          </label>
+          <label class="field">
+            <span class="field-label">كلمة المرور</span>
+            <div class="field-control">
+              <input type="password" name="password" placeholder="••••••••" autocomplete="new-password" required />
+            </div>
+          </label>
+          <label class="field">
+            <span class="field-label">الاسم مكتب تجريبي 13</span>
+            <div class="field-control">
+              <input type="text" name="displayName" placeholder="الاسم الكامل" />
+            </div>
+          </label>
+          <label class="field">
+            <span class="field-label">الدور</span>
+            <div class="field-control">
+              <select name="role">
+                <option value="user">فرد</option>
+                <option value="secretary">سكرتير</option>
+                <option value="supersecretary">سيكرتير اول</option>
+                <option value="admin">مدير</option>
+              </select>
+            </div>
+          </label>
+        </div>
+        <div class="field-group full-width">
+          <div class="field sector-station-field">
+            <span class="field-label">القطاعات المسموح بها</span>
+            <div class="field-control">
+              <div class="sector-checkboxes" data-sector-checklist="new"></div>
+              <div class="sector-actions">
+                <button type="button" class="btn secondary" data-action="confirm-sectors">تأكيد القطاعات</button>
+                <span class="sector-summary" data-sector-summary>لم يتم اختيار أي قطاع بعد.</span>
+              </div>
+              <small class="field-hint">حدد القطاعات المطلوبة ثم اضغط على زر "تأكيد القطاعات" لحفظ الاختيار.</small>
+              <div class="station-access hidden" data-station-checklist>
+                <p class="station-hint">بعد اختيار القطاعات، قم بتحديد الأقسام المتاحة لكل قطاع.</p>
+                <div class="station-groups" data-station-groups></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field-group full-width">
+          <span class="field-label">صلاحيات التطبيقات</span>
+          <div id="newUserAppToggles" class="toggle-grid"></div>
+        </div>
+        <div class="field-group full-width permission-field hidden" data-reference-permission-group>
+          <label class="toggle permission-toggle">
+            <input type="checkbox" name="manageReferenceData" value="1" data-manage-reference-data />
+            <span>السماح بتعديل البيانات المشتركة</span>
+          </label>
+          <small class="field-hint">تُستخدم هذه الصلاحية للتحكم في تعديل القطاعات والأقسام وأنواع التراخيص المشتركة.</small>
+        </div>
+        <div class="field-group full-width permission-field hidden" data-activity-history-permission-group>
+          <label class="toggle permission-toggle">
+            <input type="checkbox" name="viewActivityHistory" value="1" data-view-activity-history />
+            <span>السماح بعرض كل النشاطات وسجل نشاط الأفراد</span>
+          </label>
+          <small class="field-hint">هذه الصلاحية يمنحها المدير فقط، وتشمل السجل الكامل وسجل كل فرد.</small>
+        </div>
+        <div id="newUserMessage" class="status-message" aria-live="polite"></div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">حفظ</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="glass-card dashboard-visibility-card" id="dashboardVisibilityCard">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">تخصيص حسابي</span>
+          <h2>التطبيقات مكتب تجريبي 13ة في اللوحة الرئيسية</h2>
+        </div>
+        <p>اضغط على التطبيق لإظهاره أو إخفائه من صفحتك الرئيسية فقط. التطبيق المضيء ظاهر، والخافت مخفي.</p>
+      </header>
+      <div class="card-body">
+        <div id="dashboardVisibilityEditor" class="dashboard-visibility-editor" role="group" aria-label="التطبيقات مكتب تجريبي 13ة في حسابي"></div>
+        <div id="dashboardVisibilityMessage" class="status-message" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="glass-card app-config-card" id="appCatalogCard">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">تخصيص الواجهة</span>
+          <h2>بطاقات اللوحة الرئيسية</h2>
+        </div>
+        <p>يمكنك تعديل اسم البطاقة والوصف والأيقونة من هنا بدل تعديل ملفات الواجهة يدويًا.</p>
+      </header>
+      <div class="card-body">
+        <div id="appCatalogEditor" class="app-config-editor"></div>
+        <div id="appCatalogMessage" class="status-message" aria-live="polite"></div>
+        <div class="form-actions">
+          <button type="button" class="btn primary" id="saveAppCatalogBtn">حفظ أسماء البطاقات</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card action-approval-card" id="actionApprovalPolicyCard">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">قيود الاعتماد</span>
+          <h2>اعتماد إجراءات البرامج</h2>
+        </div>
+        <p>حدد البرامج والإجراءات التي تحتاج موافقة المدير أو السيكرتير الأول عندما ينفذها فرد.</p>
+      </header>
+      <div class="card-body">
+        <div id="actionApprovalPolicyEditor" class="action-approval-editor"></div>
+        <div id="actionApprovalPolicyMessage" class="status-message" aria-live="polite"></div>
+        <div class="form-actions">
+          <button type="button" class="btn primary" id="saveActionApprovalPolicyBtn">حفظ قيود الاعتماد</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card reference-data-card" id="referenceDataCard">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">بيانات مشتركة</span>
+          <h2>إعدادات البيانات المشتركة</h2>
+        </div>
+        <p>افتح نافذة إعدادات القطاعات أو أنواع الرخص من هنا بدل عرض كل التفاصيل داخل الصفحة.</p>
+      </header>
+      <div class="card-body">
+        <div id="referenceDataEditor" class="reference-data-editor"></div>
+        <div id="referenceDataMessage" class="status-message" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="glass-card users-table-card">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">الأفراد الحاليون</span>
+          <h2>إدارة الحسابات</h2>
+        </div>
+        <div class="card-actions">
+          <button type="button" class="btn ghost" id="refreshUsers">تحديث القائمة</button>
+        </div>
+      </header>
+  <div id="usersTablePlaceholder" class="table-placeholder">جاري تحميل بيانات الأفراد...</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <colgroup>
+            <col class="users-col-username" />
+            <col class="users-col-display-name" />
+            <col class="users-col-role" />
+            <col class="users-col-sector" />
+            <col class="users-col-apps" />
+            <col class="users-col-actions" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>اسم المستخدم</th>
+              <th>الاسم مكتب تجريبي 13</th>
+              <th>الدور</th>
+              <th>القطاع</th>
+              <th class="user-apps-header">التطبيقات المسموحة</th>
+              <th class="user-actions-header">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+      <div id="existingUserControls" class="future-control muted">
+        <h3>تحكم إضافي</h3>
+  <p>سيتم إضافة لوحات تفصيلية لكل فرد قريبًا لتخصيص الصلاحيات بشكل أكثر دقة.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="referenceDataPanel" class="view-panel" aria-hidden="true">
+    <div class="view-panel-content reference-data-panel-content" role="dialog" aria-modal="true" aria-labelledby="referenceDataPanelTitle">
+      <header class="view-panel-header">
+        <h3 id="referenceDataPanelTitle">إعدادات البيانات المشتركة</h3>
+        <button type="button" class="btn icon-btn ghost" id="closeReferenceDataPanel">✕</button>
+      </header>
+      <div id="referenceDataPanelBody" class="view-panel-body reference-data-panel-body"></div>
+      <div id="referenceDataPanelMessage" class="status-message" aria-live="polite"></div>
+      <div class="form-actions">
+        <button type="button" class="btn primary" id="saveReferenceDataBtn">حفظ البيانات المشتركة</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="viewUserPanel" class="view-panel" aria-hidden="true">
+    <div class="view-panel-content" role="dialog" aria-modal="true" aria-labelledby="viewUserTitle">
+      <header class="view-panel-header">
+        <h3 id="viewUserTitle">تفاصيل الحساب</h3>
+        <button type="button" class="btn icon-btn ghost" id="closeViewPanel">✕</button>
+      </header>
+      <div id="viewUserContent" class="view-panel-body">
+        <p class="view-placeholder">اختر فردًا من الجدول لعرض تفاصيله.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="editUserPanel" class="edit-panel">
+    <div class="edit-panel-content">
+      <header class="edit-panel-header">
+        <h3>تحرير الحساب</h3>
+        <button type="button" class="btn icon-btn ghost" id="closeEditPanel">✕</button>
+      </header>
+  <form id="editUserForm" class="form-grid" novalidate data-message-target="editUserMessage">
+        <div class="field-group">
+          <label class="field">
+            <span class="field-label">الاسم مكتب تجريبي 13</span>
+            <div class="field-control">
+              <input type="text" name="displayName" placeholder="الاسم الكامل" />
+            </div>
+          </label>
+          <label class="field">
+            <span class="field-label">الدور</span>
+            <div class="field-control">
+              <select name="role">
+                <option value="user">فرد</option>
+                <option value="secretary">سكرتير</option>
+                <option value="supersecretary">سيكرتير اول</option>
+                <option value="admin">مدير</option>
+              </select>
+            </div>
+          </label>
+        </div>
+        <div class="field-group">
+          <label class="field">
+            <span class="field-label">كلمة مرور جديدة</span>
+            <div class="field-control">
+              <input type="password" name="password" placeholder="اتركه فارغًا لعدم التغيير" autocomplete="new-password" />
+            </div>
+            <small class="field-hint">اترك الحقل فارغًا للاحتفاظ بكلمة المرور الحالية.</small>
+          </label>
+          <label class="field">
+            <span class="field-label">تأكيد كلمة المرور</span>
+            <div class="field-control">
+              <input type="password" name="passwordConfirm" placeholder="إعادة إدخال كلمة المرور" autocomplete="new-password" />
+            </div>
+          </label>
+        </div>
+        <div class="field-group full-width">
+          <div class="field sector-station-field">
+            <span class="field-label">القطاعات المسموح بها</span>
+            <div class="field-control">
+              <div class="sector-checkboxes" data-sector-checklist="edit"></div>
+              <div class="sector-actions">
+                <button type="button" class="btn secondary" data-action="confirm-sectors">تأكيد القطاعات</button>
+                <span class="sector-summary" data-sector-summary>لم يتم اختيار أي قطاع بعد.</span>
+              </div>
+              <small class="field-hint">حدد القطاعات المطلوبة ثم اضغط على زر "تأكيد القطاعات" قبل حفظ التغييرات.</small>
+              <div class="station-access hidden" data-station-checklist>
+                <p class="station-hint">يمكن اختيار أقسام متعددة لكل قطاع لإدارة محطات محددة.</p>
+                <div class="station-groups" data-station-groups></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field-group full-width">
+          <span class="field-label">صلاحيات التطبيقات</span>
+          <div class="toggle-grid"></div>
+        </div>
+        <div class="field-group full-width permission-field hidden" data-reference-permission-group>
+          <label class="toggle permission-toggle">
+            <input type="checkbox" name="manageReferenceData" value="1" data-manage-reference-data />
+            <span>السماح بتعديل البيانات المشتركة</span>
+          </label>
+          <small class="field-hint">تتحكم هذه الصلاحية في تعديل البيانات المشتركة من صفحة الإعدادات.</small>
+        </div>
+        <div class="field-group full-width permission-field" data-dashboard-customization-permission-group>
+          <label class="toggle permission-toggle">
+            <input type="checkbox" name="customizeDashboardApps" value="1" data-customize-dashboard-apps />
+            <span>السماح بتخصيص التطبيقات مكتب تجريبي 13ة في اللوحة الرئيسية</span>
+          </label>
+          <small class="field-hint">عند التفعيل يظهر لهذا الحساب قسم شخصي داخل الإعدادات لاختيار التطبيقات التي يريد إظهارها أو إخفاءها.</small>
+        </div>
+        <div class="field-group full-width permission-field hidden" data-activity-history-permission-group>
+          <label class="toggle permission-toggle">
+            <input type="checkbox" name="viewActivityHistory" value="1" data-view-activity-history />
+            <span>السماح بعرض كل النشاطات وسجل نشاط الأفراد</span>
+          </label>
+          <small class="field-hint">عند الإلغاء لن يستطيع الحساب فتح أي سجل نشاط، حتى إذا كان سيكرتير أول.</small>
+        </div>
+        <div class="field-group full-width permission-field" data-renewal-document-edit-permission-group>
+          <label class="toggle permission-toggle">
+            <input type="checkbox" name="editRenewalDocuments" value="1" data-edit-renewal-documents />
+            <span>إظهار زر «تعديل» للمستندات في برنامج التجديد</span>
+          </label>
+          <small class="field-hint">المدير والسيكرتير الأول لديهما هذه الصلاحية تلقائياً ولا يمكن إيقافها.</small>
+        </div>
+        <div id="editUserMessage" class="status-message" aria-live="polite"></div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">حفظ التغييرات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrative Integrated System</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="office-theme light-mode performance-lite">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+  <header class="office-header compact">
+    <div class="brand-group">
+      <h1 class="brand-title" dir="ltr">Administrative Integrated System</h1>
+    </div>
+    <div class="header-actions">
+      <form class="global-search-form" id="globalSearchForm" role="search" autocomplete="off">
+        <label class="sr-only" for="globalSearchInput">بحث عام</label>
+        <input type="search" id="globalSearchInput" name="globalSearchInput" placeholder="بحث بالاسم أو رقم الرخصة" />
+        <button type="submit" class="btn primary" id="globalSearchSubmit">بحث</button>
+      </form>
+      <button type="button" class="btn danger" onclick="logoutApp(event)">تسجيل الخروج</button>
+    </div>
+  </header>
+
+  <main class="office-main dashboard-main">
+    <div class="dashboard-layout">
+      <aside class="glass-card activity-strip hidden" id="activityStrip" aria-hidden="true">
+        <div class="activity-strip-header">
+          <div>
+            <span class="card-kicker">مباشر</span>
+            <h3>حالة الأفراد</h3>
+          </div>
+          <span class="activity-count-badge" id="activeUsersCount">0</span>
+        </div>
+        <div class="activity-filter" style="padding: 0 16px 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" id="showAllActivity" class="activity-filter-btn activity-all-btn">عرض كل النشاطات</button>
+          <button type="button" id="filterActiveUsers" class="activity-filter-btn">إظهار المتصلين</button>
+          <button type="button" id="filterWithNotifications" class="activity-filter-btn">إظهار الإشعارات</button>
+        </div>
+        <div class="activity-users-list" id="activeUsersList"></div>
+        <div class="activity-empty-state" id="activeUsersEmpty">
+          لا يوجد مستخدمون أو سكرتارية مضافون في النظام حالياً.
+        </div>
+      </aside>
+
+      <section class="glass-card apps-grid">
+        <div class="profile-banner">
+          <div class="profile-meta" data-profile-link tabindex="0" role="button" aria-label="عرض الملف الشخصي">
+            <span class="profile-name" id="userDisplayName">—</span>
+            <span class="profile-role" id="userRoleBadge">فرد</span>
+            <span class="profile-sector hidden" id="userSectorDetail"></span>
+          </div>
+          <button type="button" class="btn ghost" data-profile-link>👤 الملف الشخصي</button>
+        </div>
+        <div class="apps-header">
+          <div class="header-copy">
+            <span class="card-kicker">لوحة التطبيقات</span>
+            <p>اختر التطبيق المصرح لك به للانتقال مباشرة إلى بيئة العمل الخاصة به.</p>
+          </div>
+        </div>
+        <div class="button-grid office-grid" id="appCardGrid"></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="view-panel activity-panel" id="activityPanel" aria-hidden="true">
+    <div class="view-panel-content activity-panel-content">
+      <div class="view-panel-header">
+        <div class="activity-panel-heading">
+          <h3 id="activityPanelTitle">سجل النشاط</h3>
+          <p id="activityPanelSubtitle">—</p>
+        </div>
+        <button type="button" class="btn ghost small" id="closeActivityPanel">إغلاق</button>
+      </div>
+      <div class="view-panel-body activity-panel-body" id="activityPanelBody">
+        <p class="view-placeholder">اختر مستخدماً من الشريط الجانبي لعرض سجل نشاطه.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-panel delete-approval-panel" id="deleteApprovalPanel" aria-hidden="true">
+    <div class="view-panel-content delete-approval-panel-content">
+      <div class="view-panel-header">
+        <div class="activity-panel-heading">
+          <h3 id="deleteApprovalPanelTitle">طلبات الاعتماد</h3>
+          <p id="deleteApprovalPanelSubtitle">الطلبات المرسلة من المستخدمين لاعتماد الحذف</p>
+        </div>
+        <button type="button" class="btn ghost small" id="closeDeleteApprovalPanel">إغلاق</button>
+      </div>
+      <div class="view-panel-body delete-approval-panel-body" id="deleteApprovalPanelBody">
+        <p class="view-placeholder">لا توجد طلبات حذف معلقة.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-panel platform-search-panel" id="platformSearchPanel" aria-hidden="true">
+    <div class="view-panel-content platform-search-panel-content">
+      <div class="view-panel-header">
+        <div class="activity-panel-heading">
+          <h3 id="platformSearchTitle">نتائج البحث العام</h3>
+          <p id="platformSearchSubtitle">اكتب اسماً أو رقم رخصة للبحث في البرامج.</p>
+        </div>
+        <button type="button" class="btn ghost small" id="closePlatformSearchPanel">إغلاق</button>
+      </div>
+      <div class="view-panel-body platform-search-panel-body">
+        <div class="platform-search-status" id="platformSearchStatus" role="status" aria-live="polite"></div>
+        <div class="platform-search-results-groups" id="platformSearchResultsGroups">
+          <div class="platform-search-empty">لا توجد نتائج بعد.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/activity-core.js" defer></script>
+  <script src="dashboard.js" defer></script>
+</body>
+</html>

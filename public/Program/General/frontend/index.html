@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrative Integrated System</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="/activity-core.js" defer></script>
+  <script src="/reference-runtime.js" defer></script>
+</head>
+<body class="office-theme light-mode login-page">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+  <div class="ambient-light ambient-light-top"></div>
+  <div class="ambient-light ambient-light-bottom"></div>
+  <div class="floating-shape shape-1"></div>
+  <div class="floating-shape shape-2"></div>
+  <div class="floating-shape shape-3"></div>
+
+  <header class="office-header login-header">
+    <div class="brand-group">
+      
+      <div class="brand-copy"><h1 style="font-size:24px;direction:ltr">Administrative Integrated System</h1></div>
+    </div>
+  </header>
+
+  <main class="office-main login-main">
+    <section class="glass-card login-panel">
+      <div class="panel-copy">
+        <span class="card-kicker">أهلاً بعودتك</span>
+        <h2>تسجيل الدخول إلى النظام</h2>
+        <p>يرجى إدخال بيانات الحساب للوصول إلى التطبيقات المصرح لك بها.</p>
+      </div>
+      <form id="loginForm" class="login-form" novalidate>
+        <label class="field">
+          <span class="field-label">اسم المستخدم</span>
+          <div class="field-control">
+            <input type="text" id="loginUsername" name="username" placeholder="أدخل اسم المستخدم" autocomplete="username" required />
+          </div>
+        </label>
+        <label class="field">
+          <span class="field-label">كلمة المرور</span>
+          <div class="field-control">
+            <input type="password" id="loginPassword" name="password" placeholder="••••••••" autocomplete="current-password" required />
+          </div>
+        </label>
+        <button type="submit" class="btn primary full">بدء الجلسة</button>
+        <div id="loginMsg" class="status-message" aria-live="polite"></div>
+      </form>
+      <footer class="panel-footer"><p dir="ltr">PUBLIC demo: admin / DemoAdmin!2026<br>Scoped user: demo-user / DemoUser!2026</p>
+        <p>عرض تجريبي محلي ببيانات وهمية فقط. الحسابات أدناه منشورة للاختبار.</p>
+      </footer>
+    </section>
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

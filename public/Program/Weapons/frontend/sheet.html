@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Administrative Integrated System</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="/activity-core.js" defer></script>
+  <script src="/reference-runtime.js" defer></script>
+  <script src="/activity-overlays.js" defer></script>
+  <script src="/delete-approval-user-notice.js" defer></script>
+  
+</head>
+<body>
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+
+  <script>
+    (function() {
+      const FLAG_KEY = 'weaponsSheetForceReload';
+      try {
+        if (sessionStorage.getItem(FLAG_KEY) === '1') {
+          sessionStorage.removeItem(FLAG_KEY);
+          window.location.reload();
+        }
+      } catch (_) {}
+    })();
+  </script>
+
+  <!-- Header -->
+  <header class="sheet-header" style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <button id="settingsToggle" title="الإعدادات" class="settings-toggle">⚙️</button>
+    </div>
+    <div class="sheet-title-wrap" style="flex: 1; display: flex; align-items: center; justify-content: center; margin-right: 40px;">
+        
+    </div>
+    <div class="sheet-header-actions">
+        <button id="filterUndoBtn" type="button" title="عودة للبحث السابق" aria-label="عودة للبحث السابق" class="filter-undo-btn" style="display:none;" onclick="if (window.undoFilterState) { window.undoFilterState(); }">↩️ عودة</button>
+        <button id="rerenderTableBtn" type="button" title="إعادة عرض الجدول" aria-label="إعادة عرض الجدول" style="background:#0ea5a4;border:none;border-radius:999px;padding:8px 12px;font-size:1.2em;cursor:pointer;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.15);" onclick="if (window.rerenderWeaponsTable) { window.rerenderWeaponsTable({ preserveScroll: true }); } else if (window.applyFilter) { window.applyFilter(); }">🔁</button>
+        <button onclick="logoutApp(event)" class="logout-btn">📤 خروج</button>
+    </div>
+</header>
+
+  <h2 id="sheetTitle" style="text-align:center; width:100%; margin: 0; padding: 4px 0; font-weight: bold;">تطبيق الاسلحة الملغاة</h2>
+  <main style="padding-top: 0 !important; margin-top: 0 !important;">
+
+    <section class="card csv-card sheet-main-card" style="margin-top: 0 !important; padding-top: 8px !important;">
+      <div class="sheet-controls">
+        <div class="filters-grid">
+        <!-- 1) Search (centered, compact) -->
+        <div class="filters-group search-group">
+          <div class="field search-field">
+            <label for="filterInput" class="filters-label">البحث</label>
+            <div class="search-column-control">
+              <input id="filterInput" placeholder="ابحث في كل الأعمدة" />
+              <select id="filterColumnSelect" aria-label="تحديد عمود البحث">
+                <option value="__all__">كل الأعمدة</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="licenseNumberFilter" class="filters-label">رقم القيد</label>
+            <input id="licenseNumberFilter" type="text" placeholder="اكتب رقم القيد" />
+          </div>
+        </div>
+
+        <!-- 2) Choosing (sector, stations) -->
+        <div class="filters-group choose-group">
+          <!-- Station Buttons Container (Far Left) -->
+          <div class="field compact-field station-buttons-field">
+             <div id="stationButtonsContainer" class="station-buttons-container">
+               <!-- Buttons injected here -->
+             </div>
+          </div>
+
+          <div class="field compact-field sector-stripes-field">
+            <label for="sectorSelect" class="filters-label" id="sectorStripesLabel">القطاع</label>
+            <div class="sector-stripes-wrapper" role="group" aria-labelledby="sectorStripesLabel">
+              <div class="sector-stripes" id="sectorStripes"></div>
+            </div>
+            <select id="sectorSelect" class="sector-select-hidden" onchange="onSectorChange()">
+              <option value="" selected disabled>اختر القطاع</option>
+            </select>
+          </div>
+
+          <div class="field compact-field station-field" style="display:none;">
+            <label class="filters-label" for="stationDropdownBtn">القسم</label>
+            <div id="stationDropdown" class="checklist-dropdown">
+              <button id="stationDropdownBtn" type="button" onclick="guardStationDropdown()">اختر القسم</button>
+              <div id="stationDropdownList" class="dropdown-list">
+                <!-- injected later -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+      </div>
+      <div class="csv-card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:12px;white-space:nowrap;">
+          <h3 style="color:var(--ink); font-weight:600; margin:0;">كشوف الاسلحة</h3>
+        </div>
+        
+        <div class="status-toggle-group" role="group" aria-label="حالة السحب">
+          <span class="filters-label" style="margin:0;">حالة السحب:</span>
+          <div id="weaponStatusButtons" class="status-toggle-buttons">
+            <button type="button" class="status-toggle-btn is-active" data-value="both">كل</button>
+            <button type="button" class="status-toggle-btn" data-value="got">الاسلحة المسحوبة</button>
+            <button type="button" class="status-toggle-btn" data-value="not">الاسلحة الغير مسحوبة</button>
+          </div>
+          <input type="hidden" id="weaponStatusSelect" value="both" />
+        </div>
+
+        <div class="table-actions-inline">
+          <!-- <button id="filterHarzNotesBtn" type="button" style="background:#0ea5e9;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:1.05em;color:#fff;min-width:150px;">🔍 ملاحظات تحتوي حرز</button> -->
+          <button type="button" id="stationInfoBtn" class="btn-info" hidden aria-hidden="true">معلومات</button>
+          <button id="btnPrintBrowser" onclick="window.printFilteredBrowser()" class="btn-print">🖨️ طباعة</button>
+          <button type="button" id="openCreateWeaponModalBtn" class="btn-open" style="background:#b88503;color:#fff;border:none;">📄 ادراج سلاح جديد</button>
+          <button type="button" onclick="saveCSV()" class="btn-save">💾 حفظ</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button id="deleteRowsBtn" style="background:#a81e1e;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:1.05em;">🗑️ حذف المحدد</button>
+          <button id="undoBtn" title="استعادة" style="background:#2b6cb0;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:1.05em;color:#fff;">↶ تراجع</button>
+          <!-- <button id="bulkWithdrawFilteredBtn" data-skip-cooldown="1" title="تعيين كل النتائج المعروضة كمسحوبة" style="background:#0f766e;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:1.05em;color:#fff;">⚡ تعليم النتائج مسحوبة (مؤقت)</button> -->
+        </div>
+      </div>
+
+      <div class="pager-summaries">
+        <div id="licensesSummary" class="pager-summary">
+          <span class="pager-summary-label">عدد الرخص:</span>
+          <span id="licensesCount" class="pager-summary-value">—</span>
+        </div>
+        <div id="overallWeaponsSummary" class="pager-summary">
+          <span class="pager-summary-label">إجمالي الأسلحة:</span>
+          <span id="weaponsOverallCount" class="pager-summary-value">—</span>
+        </div>
+        <div id="withdrawnWeaponsSummary" class="pager-summary">
+          <span class="pager-summary-label">إجمالي الأسلحة المسحوبة:</span>
+          <span id="weaponsTotalCount" class="pager-summary-value">—</span>
+        </div>
+        <div id="notWithdrawnWeaponsSummary" class="pager-summary">
+          <span class="pager-summary-label">إجمالي الأسلحة الغير مسحوبة:</span>
+          <span id="weaponsNotWithdrawnCount" class="pager-summary-value">—</span>
+        </div>
+      </div>
+
+      <div class="pager">
+        <div class="pager-nav">
+          <button id="prevPage" class="pager-btn">السابق</button>
+          <span id="pageInfo" class="pager-info">—</span>
+          <button id="nextPage" class="pager-btn">التالي</button>
+        </div>
+        <div class="pager-size-group">
+          <label for="pageSize">صفوف/صفحة:</label>
+          <select id="pageSize" class="pager-select">
+            <option value="50">50</option>
+            <option value="100" selected>100</option>
+            <option value="250">250</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="csvPreviewContainer">
+        <!-- Table content is built by the modular frontend scripts -->
+        <table id="csvPreview" class="excel cram">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Weapons frame (global, reused for cells) -->
+      <div id="weaponsPopup" class="weapons-frame-modal" aria-hidden="true">
+        <div class="weapons-frame-modal__panel" role="dialog" aria-modal="true" aria-labelledby="withdrawPopupTitle">
+          <div class="weapons-frame-modal__header">
+            <div style="display:flex;flex-direction:column;gap:4px;flex:1;">
+              <strong id="withdrawPopupTitle" style="font-size:1.05em;"></strong>
+              <span id="withdrawLicenseLabel" style="color:#4b5563;font-size:0.9em;"></span>
+            </div>
+            <button id="withdrawCloseBtn" type="button" class="notes-edit-modal__close" aria-label="إغلاق">✖</button>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="font-size:0.9em;color:#4b5563;margin-bottom:4px;">بيانات السلاح</div>
+            <div id="withdrawWeaponDetails" style="font-weight:600;word-break:break-word;"></div>
+          </div>
+          <div id="weaponDuplicateHint" style="display:none;background:#fef3c7;border-right:4px solid #f59e0b;color:#78350f;padding:7px 10px;border-radius:6px;font-weight:700;font-size:0.9em;margin-bottom:6px;"></div>
+          <div id="weaponAddForm" class="weapon-add-form" style="margin-bottom:12px;">
+            <input type="text" id="weaponAddInput" class="weapon-add-input" placeholder="اكتب اسم السلاح الجديد" />
+            <button type="button" id="weaponAddBtn" class="weapon-add-btn">➕ اضافة السلاح</button>
+          </div>
+          <div id="withdrawStatusLabel" style="display:inline-block;padding:6px 12px;border-radius:12px;font-weight:700;color:#fff;margin-bottom:8px;"></div>
+          <div id="weaponsPopupMsg" style="margin-bottom:8px;color:#666;font-size:0.95em;display:none;"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button type="button" id="withdrawToggleBtn" style="background:#0ea5a4;color:#fff;border:none;padding:8px 14px;border-radius:8px;min-width:120px;">سحب</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Station Information Frame (hidden by default) -->
+  <div id="stationInfoFrame" class="station-info-frame" aria-hidden="true">
+    <div class="station-info-dialog" role="dialog" aria-modal="true" aria-labelledby="stationInfoTitle">
+      <div class="station-info-header">
+        <div>
+          <div id="stationInfoTitle" class="station-info-title">معلومات الأقسام</div>
+          <div id="stationInfoSubtitle" class="station-info-subtitle">ملخص حسب القسم</div>
+        </div>
+        <button type="button" id="stationInfoCloseBtn" class="station-info-close">✖</button>
+      </div>
+      <div class="station-info-body">
+        <div class="station-info-filters" aria-label="تصفية معلومات الأقسام">
+          <label class="station-info-filter">
+            <span>القطاع</span>
+            <select id="stationInfoSectorFilter">
+              <option value="">كل القطاعات</option>
+            </select>
+          </label>
+          <label class="station-info-filter">
+            <span>القسم</span>
+            <select id="stationInfoStationFilter">
+              <option value="">كل الأقسام</option>
+            </select>
+          </label>
+        </div>
+        <div id="stationInfoMeta" class="station-info-meta"></div>
+        <div class="station-info-table-wrap">
+          <table class="station-info-table">
+            <thead>
+              <tr>
+                <th>القسم</th>
+                <th>إجمالي الرخص</th>
+                <th>إجمالي الأسلحة</th>
+                <th>الأسلحة المسحوبة</th>
+                <th>الأسلحة الغير مسحوبة</th>
+              </tr>
+            </thead>
+            <tbody id="stationInfoTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="weaponsCreateModal" class="weapons-create-modal" aria-hidden="true">
+    <div class="weapons-create-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="openCreateWeaponModalBtn">
+      <div id="weaponsCreateModalHost"></div>
+    </div>
+  </div>
+
+  <script src="api-base.js" defer></script>
+  <script src="modules/safeGuards.js" defer></script>
+  <script src="modules/data.js" defer></script>
+  <script src="modules/weapon-text-utils.js" defer></script>
+  <script src="modules/weapon-state-store.js" defer></script>
+  <script src="modules/table.js" defer></script>
+  <script>
+    (function setupWeaponsLazyModules() {
+      const modulePromises = Object.create(null);
+      const idle = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 1));
+
+      function resolveAssetUrl(src) {
+        if (typeof window.resolvePlatformAsset === 'function') {
+          return window.resolvePlatformAsset(src);
+        }
+        return src;
+      }
+
+      function loadScriptOnce(key, src) {
+        if (modulePromises[key]) return modulePromises[key];
+        modulePromises[key] = new Promise((resolve, reject) => {
+          const existing = document.querySelector(`script[data-lazy-module="${key}"]`);
+          if (existing && existing.dataset.loaded === 'true') {
+            resolve();
+            return;
+          }
+          const script = existing || document.createElement('script');
+          script.src = resolveAssetUrl(src);
+          script.defer = true;
+          script.dataset.lazyModule = key;
+          script.onload = () => {
+            script.dataset.loaded = 'true';
+            resolve();
+          };
+          script.onerror = () => reject(new Error(`Failed to load ${src}`));
+          if (!existing) document.head.appendChild(script);
+        });
+        return modulePromises[key];
+      }
+
+      window.ensureWeaponsModelModule = () => loadScriptOnce('weapons-model', 'modules/model/model.js');
+      window.ensureWeaponsSettingsModule = async () => {
+        await loadScriptOnce('weapons-settings', 'settings.js');
+        if (typeof window.initWeaponsSettingsUi === 'function') {
+          window.initWeaponsSettingsUi();
+        }
+      };
+      window.ensureWeaponsCreateFormModule = async () => {
+        await loadScriptOnce('weapons-create-form', 'modules/create-form.js');
+      };
+
+      document.addEventListener('weapons:table-rendered', function loadModelAfterFirstRender() {
+        document.removeEventListener('weapons:table-rendered', loadModelAfterFirstRender);
+        idle(() => {
+          window.ensureWeaponsModelModule()
+            .then(() => {
+              if (typeof window.scheduleModelNotesScan === 'function') {
+                window.scheduleModelNotesScan({ delayMs: 1500 });
+              }
+            })
+            .catch((error) => console.warn('Weapons model module lazy-load failed', error));
+        });
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const settingsToggle = document.getElementById('settingsToggle');
+        if (settingsToggle) {
+          settingsToggle.addEventListener('click', async (event) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            try {
+              await window.ensureWeaponsSettingsModule();
+              if (typeof window.toggleWeaponsSettingsSidebar === 'function') {
+                window.toggleWeaponsSettingsSidebar(true);
+              }
+            } catch (error) {
+              console.warn('Weapons settings lazy-load failed', error);
+              if (typeof window.showToast === 'function') {
+                window.showToast('تعذر فتح الإعدادات الآن.', 'error');
+              }
+            }
+          }, { capture: true });
+        }
+      });
+    })();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('weaponsCreateModal');
+      const host = document.getElementById('weaponsCreateModalHost');
+      if (!modal || !host) return;
+
+      const setOpenState = (open) => {
+        modal.classList.toggle('is-open', !!open);
+        modal.setAttribute('aria-hidden', open ? 'false' : 'true');
+        document.body.classList.toggle('weapons-create-modal-open', !!open);
+      };
+
+      const closeModal = () => {
+        setOpenState(false);
+        return true;
+      };
+
+      let instance = null;
+
+      const ensureCreateFormMounted = async () => {
+        if (instance) return instance;
+        if (typeof window.ensureWeaponsCreateFormModule === 'function') {
+          await window.ensureWeaponsCreateFormModule();
+        }
+        if (!window.WeaponsCreateForm || typeof window.WeaponsCreateForm.mount !== 'function') {
+          throw new Error('WeaponsCreateForm is not available');
+        }
+        instance = window.WeaponsCreateForm.mount(host, {
+          mode: 'modal',
+          closeLabel: 'إغلاق',
+          onClose: () => closeModal(),
+          onSuccess: async ({ message }) => {
+            if (typeof window.refreshWeaponsSheetFromServer === 'function') {
+              try {
+                await window.refreshWeaponsSheetFromServer({ force: true, preservePage: true, preserveScroll: true });
+              } catch (error) {
+                console.warn('Failed to refresh sheet after create', error);
+              }
+            } else if (typeof window.applyFilter === 'function') {
+              try { window.applyFilter(); } catch (_) {}
+            }
+            if (typeof window.showToast === 'function') {
+              window.showToast(message || 'تم إدراج السجل بنجاح✅.');
+            }
+          },
+          onInspectDuplicate: ({ focusPayload }) => {
+            if (typeof window.focusWeaponsSheetFilters === 'function') {
+              window.focusWeaponsSheetFilters(focusPayload, { showReturnButton: false });
+            }
+          }
+        });
+        return instance;
+      };
+
+      const openModal = async (options = {}) => {
+        const mounted = await ensureCreateFormMounted();
+        setOpenState(true);
+        mounted?.open({ restoreDraft: !!options.restoreDraft });
+        return true;
+      };
+
+      modal.addEventListener('mousedown', (event) => {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+          event.preventDefault();
+          closeModal();
+        }
+      });
+
+      window.openWeaponsCreateModal = openModal;
+      window.closeWeaponsCreateModal = closeModal;
+      window.requestOpenWeaponsCreateModal = async function requestOpenWeaponsCreateModal(options = {}) {
+        const opts = options && typeof options === 'object' ? options : {};
+        const requireCleanSheet = !Object.prototype.hasOwnProperty.call(opts, 'requireCleanSheet') || !!opts.requireCleanSheet;
+        if (requireCleanSheet) {
+          const guardResult = window.UnsavedGuard && typeof window.UnsavedGuard.tryConfirmNavigation === 'function'
+            ? await window.UnsavedGuard.tryConfirmNavigation({ onSave: window.weaponsSaveBeforeExit })
+            : true;
+          if (!guardResult) return false;
+          if (typeof window.refreshWeaponsSheetFromServer === 'function') {
+            try {
+              await window.refreshWeaponsSheetFromServer({ force: true, preservePage: true, preserveScroll: true });
+            } catch (error) {
+              console.warn('Failed to prepare sheet before opening create modal', error);
+              if (typeof window.showToast === 'function') {
+                window.showToast('تعذر تجهيز الجدول قبل فتح نموذج الإدراج.', 'error');
+              }
+              return false;
+            }
+          }
+        }
+        return openModal({ restoreDraft: !!opts.restoreDraft });
+      };
+    });
+  </script>
+  <script src="modules/frames.js" defer></script>
+
+  <!-- Settings + Duplicates UI -->
+  <!-- Sidebar and large duplicates frame are implemented in settings.js -->
+
+  <!-- Recall modal (hidden by default) -->
+  <div id="recallModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;padding:24px;z-index:9999;">
+    <div style="background:#fff;border-radius:10px;max-width:900px;width:100%;max-height:80vh;overflow:auto;padding:18px;direction:rtl;text-align:right;">
+      <h3 style="margin-top:0;">السجلات المحذوفة</h3>
+      <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;">
+        <button id="recallSelectAll" style="padding:6px 10px;border-radius:6px;">تحديد الكل</button>
+        <button id="recallClearAll" style="padding:6px 10px;border-radius:6px;">إلغاء التحديد</button>
+        <label style="margin-right:auto;">اختر صفوف ثم اضغط استرجاع</label>
+        <button id="recallRecoverBtn" style="background:#2b6cb0;color:#fff;border:none;padding:8px 12px;border-radius:8px;">استرجاع المحدد</button>
+        <button id="recallCloseBtn" style="background:#ff0000;border:none;padding:8px 12px;border-radius:8px;margin-left:8px;">إغلاق</button>
+      </div>
+      <div id="recallListContainer" style="overflow:auto;max-height:60vh;border:1px solid #eee;padding:8px;border-radius:6px;background:#fafafa;">
+        <!-- rows injected here as table of checkboxes -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Weapon edit modal -->
+  <div id="weaponEditModal" class="weapon-edit-modal" aria-hidden="true">
+    <div class="weapon-edit-modal__panel" role="dialog" aria-labelledby="weaponEditModalTitle">
+      <h3 id="weaponEditModalTitle">تعديل بيانات السلاح</h3>
+      <p id="weaponEditModalHint" class="weapon-edit-modal__hint">قم بتحديث اسم السلاح ثم اضغط تعديل.</p>
+      <label for="weaponEditInput" class="weapon-edit-modal__label">اسم السلاح</label>
+      <input id="weaponEditInput" type="text" class="weapon-edit-modal__input" placeholder="اكتب الاسم الجديد" />
+      <div class="weapon-edit-modal__actions">
+        <button id="weaponEditCancel" type="button" class="weapon-edit-modal__btn weapon-edit-modal__btn--ghost">رجوع</button>
+        <button id="weaponEditSubmit" type="button" class="weapon-edit-modal__btn weapon-edit-modal__btn--primary">تعديل</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes edit modal -->
+  <div id="notesEditModal" class="notes-edit-modal" aria-hidden="true">
+    <div class="notes-edit-modal__panel" role="dialog" aria-modal="true" aria-labelledby="notesEditModalTitle">
+      <div class="notes-edit-modal__header">
+        <div>
+          <h3 id="notesEditModalTitle">تعديل الملاحظات</h3>
+          <p id="notesEditModalMeta" class="notes-edit-modal__meta"></p>
+        </div>
+        <button id="notesEditCancel" type="button" class="notes-edit-modal__close" aria-label="إغلاق">✖</button>
+      </div>
+      <textarea id="notesEditTextarea" class="notes-edit-modal__textarea" spellcheck="false"></textarea>
+      <div class="notes-edit-modal__actions">
+        <button id="notesEditDiscard" type="button" class="notes-edit-modal__btn notes-edit-modal__btn--ghost">رجوع</button>
+        <button id="notesEditSave" type="button" class="notes-edit-modal__btn notes-edit-modal__btn--primary">حفظ الملاحظات</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const selectEl = document.getElementById('sectorSelect');
+      const stripesContainer = document.getElementById('sectorStripes');
+      if (!selectEl || !stripesContainer) return;
+
+      const STRIPE_COLORS = ['#0ea5a4', '#f97316', '#22c55e', '#6366f1', '#0ea5e9', '#e11d48', '#7c3aed', '#d97706'];
+      const getStripeButtons = () => Array.from(stripesContainer.querySelectorAll('[data-sector-stripe]'));
+      const getSectorOptions = () => Array.from(selectEl.options).filter((opt) => opt.value);
+      const fallbackSectorChange = () => {
+        try {
+          if (typeof window.applyAllFilters === 'function') {
+            window.applyAllFilters();
+            return;
+          }
+          if (typeof window.applyFilter === 'function') {
+            window.applyFilter();
+          }
+        } catch (error) {
+          console.warn('Sector change fallback failed', error);
+        }
+      };
+
+      // Provide a default handler so the legacy onchange="onSectorChange()" hook never breaks.
+      if (typeof window.onSectorChange !== 'function') {
+        window.onSectorChange = fallbackSectorChange;
+      }
+
+      const renderStripes = () => {
+        const options = getSectorOptions();
+        stripesContainer.innerHTML = '';
+        options.forEach((opt, index) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'sector-stripe';
+          btn.dataset.sectorStripe = '';
+          btn.dataset.sector = opt.value;
+          btn.textContent = (opt.textContent || '').trim() || opt.value;
+          btn.style.setProperty('--stripe-color', STRIPE_COLORS[index % STRIPE_COLORS.length]);
+          btn.disabled = Boolean(opt.disabled);
+          btn.classList.toggle('is-disabled', btn.disabled);
+          btn.setAttribute('aria-disabled', btn.disabled ? 'true' : 'false');
+          stripesContainer.appendChild(btn);
+        });
+      };
+
+      const updateActiveStripe = (value) => {
+        const normalized = value || '';
+        stripesContainer.dataset.activeSector = normalized;
+        getStripeButtons().forEach((btn) => {
+          const isActive = btn.dataset.sector === normalized;
+          btn.classList.toggle('is-active', isActive);
+          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+      };
+
+      const triggerChange = () => {
+        const changeEvent = new Event('change', { bubbles: true });
+        selectEl.dispatchEvent(changeEvent);
+      };
+
+      const setSectorValue = (value, { dispatch = true } = {}) => {
+        const normalized = value || '';
+        if (selectEl.value !== normalized) {
+          selectEl.value = normalized;
+        }
+        updateActiveStripe(normalized);
+        if (dispatch) triggerChange();
+      };
+
+      const updateAvailability = () => {
+        renderStripes();
+        updateActiveStripe(selectEl.value || '');
+      };
+
+      stripesContainer.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-sector-stripe]');
+        if (!btn || btn.disabled) return;
+        const sectorValue = btn.dataset.sector || '';
+        if (!sectorValue || selectEl.value === sectorValue) return;
+        setSectorValue(sectorValue);
+      });
+
+      selectEl.addEventListener('change', () => {
+        updateActiveStripe(selectEl.value || '');
+      });
+
+      const observer = new MutationObserver(() => updateAvailability());
+      observer.observe(selectEl, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
+
+      updateAvailability();
+
+      // --- Station Buttons Sync Logic ---
+      const stationList = document.getElementById('stationDropdownList');
+      const stationButtonsContainer = document.getElementById('stationButtonsContainer');
+      
+      const syncStationButtons = () => {
+        if (!stationList || !stationButtonsContainer) return;
+        
+        // Clear existing buttons
+        stationButtonsContainer.innerHTML = '';
+        
+        // Get all checkboxes from the hidden dropdown list
+        const checkboxes = Array.from(stationList.querySelectorAll('input[type="checkbox"]'));
+        
+        if (checkboxes.length === 0) {
+           // Optional: Show "Select a sector first" or empty state if needed
+           return;
+        }
+
+        checkboxes.forEach(chk => {
+           const labelText = chk.parentElement ? chk.parentElement.textContent.trim() : chk.value;
+           const btn = document.createElement('button');
+           btn.type = 'button';
+           btn.className = 'station-btn';
+           btn.textContent = labelText;
+           btn.dataset.value = chk.value;
+           
+           // Sync initial state
+           if (chk.checked) btn.classList.add('is-selected');
+           
+           // Click handler
+           btn.addEventListener('click', () => {
+             chk.click(); // Simulate click on the original checkbox to trigger existing logic
+             // Visual update happens via observer below or immediate toggle
+             // btn.classList.toggle('is-selected', chk.checked); 
+           });
+           
+           stationButtonsContainer.appendChild(btn);
+        });
+      };
+
+      // Observe changes in the station list (populated by table.js)
+      if (stationList) {
+        const stationObserver = new MutationObserver(() => {
+           syncStationButtons();
+        });
+        stationObserver.observe(stationList, { childList: true, subtree: true });
+        
+        // Also listen for change events on the list to update button states (e.g. if "Select All" is used)
+        stationList.addEventListener('change', (e) => {
+           if (e.target.type === 'checkbox') {
+              const btn = stationButtonsContainer.querySelector(`button[data-value="${e.target.value}"]`);
+              if (btn) {
+                 btn.classList.toggle('is-selected', e.target.checked);
+              }
+           }
+        });
+      }
+      
+      // Initial sync attempt (in case already populated)
+      syncStationButtons();
+
+      try {
+        window.setSectorStripeValue = (value, options = {}) => {
+          const dispatch = options.dispatch !== false;
+          setSectorValue(value || '', { dispatch });
+        };
+      } catch (_) {}
+    });
+  </script>
+
+  <script>
+    // ====== Column Width System for sheet.html ======
+    const EMPTY_WEIGHT = 0.6;
+    const FIXED_COLUMN_WIDTHS = {
+      __select__: 70,
+      "حالة السحب": 120
+    };
+    const COLUMN_WEIGHTS = {
+      "م": 0.8,
+      "رقم": 0.9,               // "رقم القيد" may appear as "رقم" in your header bar
+      "نوع الرخصة": 1.0,
+      "الاسم": 1.6,
+      "العنوان": 1.8,
+      "بيانات السلاح": 1.8,
+      "تاريخ قرار اللغاء": 1.2,
+      "تاريخ قرار الالغاء": 1.2,
+      "سبب الالغاء": 1.2,
+      "القسم التابع": 1.5,
+      "القطاع": 1.1,
+      "عدد القطع": 0.9,
+      "رقم الايداع": 0.9,
+      "تاريخ الايداع": 1.3,
+      "ملاحظات": 1.3,
+      "اجراءات": 1.3,
+  // status column (record-level withdrawal state). Edit this value to change its width in the table.
+      "حالة السحب": 1.4,
+  // alias in Latin for convenience
+  // "status": 0.9,
+    };
+
+    function normalizeHeaderText(th) {
+      if (th.querySelector('input[type="checkbox"]')) return "__select__";
+      let t = (th.textContent || "").trim();
+      // strip common sort arrows/symbols
+      t = t.replace(/[\u2190-\u21FF\u2300-\u23FF]/g, "");
+      // trim punctuation and stray chars
+      t = t.replace(/[^\p{L}\p{N}\s._-]/gu, "").trim();
+      // unify "رقم القيد" to "رقم" if needed
+      if (t === "رقم القيد") t = "رقم";
+      return t;
+    }
+
+    function buildWeightedCSS() {
+      const table = document.getElementById('csvPreview');
+      if (!table) return "";
+      const ths = table.querySelectorAll('thead th');
+      if (!ths.length) return "";
+
+      // Collect labels and weights
+      const labels = Array.from(ths).map(normalizeHeaderText);
+      const weights = labels.map(lbl => {
+        if (!lbl) return EMPTY_WEIGHT;
+        return (lbl in COLUMN_WEIGHTS) ? COLUMN_WEIGHTS[lbl] : 1;
+      });
+      const total = weights.reduce((a,b)=>a+b, 0) || 1;
+
+      // Build CSS that forces % widths (with !important to override legacy rules)
+      let css = "";
+      weights.forEach((w, i) => {
+        const pct = (w / total * 100).toFixed(4);
+        const n = i + 1;
+        css += `
+#csvPreview.cram thead th:nth-child(${n}),
+#csvPreview.cram tbody td:nth-child(${n}) {
+  width: ${pct}% !important;
+  max-width: ${pct}% !important;
+}`;
+      });
+      return css;
+    }
+
+    function ensureColGroup(labels, weights, total) {
+      const table = document.getElementById('csvPreview');
+      if (!table) return;
+      let colgroup = table.querySelector('colgroup#weighted-colgroup');
+      if (!colgroup) {
+        colgroup = document.createElement('colgroup');
+        colgroup.id = 'weighted-colgroup';
+        table.insertBefore(colgroup, table.firstChild);
+      }
+      const tableWidth = table.clientWidth || table.offsetWidth || 0;
+      const fixedPxTotal = labels.reduce((sum, lbl) => sum + (FIXED_COLUMN_WIDTHS[lbl] || 0), 0);
+      const remainingPx = Math.max(0, tableWidth - fixedPxTotal);
+      colgroup.innerHTML = labels.map((lbl, idx) => {
+        const fixedPx = FIXED_COLUMN_WIDTHS[lbl];
+        if (fixedPx) {
+          return `<col style="width:${fixedPx}px;max-width:${fixedPx}px;">`;
+        }
+        const w = weights[idx] || 0;
+        const px = total ? (w / total) * remainingPx : 0;
+        const widthPx = Math.max(40, Math.round(px));
+        return `<col style="width:${widthPx}px;max-width:${widthPx}px;">`;
+      }).join('');
+    }
+
+    function applyColumnWeights() {
+      const css = buildWeightedCSS();
+      if (!css) return;
+      let styleEl = document.getElementById('weighted-col-style');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'weighted-col-style';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = css;
+      // Ensure table never exceeds its container
+      const table = document.getElementById('csvPreview');
+      if (table) {
+        table.style.width = "100%";
+        table.style.tableLayout = 'fixed';
+        const ths = table.querySelectorAll('thead th');
+        if (ths && ths.length) {
+          const labels = Array.from(ths).map(normalizeHeaderText);
+          const weights = labels.map(lbl => {
+            if (!lbl) return EMPTY_WEIGHT;
+            return (lbl in COLUMN_WEIGHTS) ? COLUMN_WEIGHTS[lbl] : 1;
+          });
+          const total = labels.reduce((sum, lbl, idx) => sum + (FIXED_COLUMN_WIDTHS[lbl] ? 0 : (weights[idx] || 0)), 0) || 1;
+          ensureColGroup(labels, weights, total);
+        }
+      }
+    }
+
+    // Observe header changes because the table header may be rebuilt during load, sort, or pagination.
+    const theadNode = document.querySelector('#csvPreview thead');
+    if (theadNode) {
+      const observer = new MutationObserver(applyColumnWeights);
+      observer.observe(theadNode, { childList: true, subtree: true });
+    }
+
+    // First attempt after the page is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      // If your code dispatches a custom event when the table is ready:
+      document.addEventListener('table:ready', applyColumnWeights);
+      // Fallback
+      setTimeout(applyColumnWeights, 0);
+      setTimeout(applyColumnWeights, 100);  // handle async header fills
+      setTimeout(applyColumnWeights, 300);
+    });
+
+    // Keep your existing "open CSV" behavior
+    const openCsvBtn = document.getElementById('openCsvBtn');
+    if (openCsvBtn) {
+      openCsvBtn.addEventListener('click', async () => {
+        try {
+          const openCsvUrl = (typeof window.buildWeaponsApiUrl === 'function')
+            ? window.buildWeaponsApiUrl('/api/open-csv')
+            : '/api/open-csv';
+          const res = await fetch(openCsvUrl, { method: 'GET', cache: 'no-store' });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+        } catch (e) {
+          if (window.openCSV) window.openCSV(); else window.open('/api/weapons/csv-raw','_blank');
+        }
+      });
+    }
+
+    // Guard: require sector selection before opening stations
+    function guardStationDropdown() {
+      const sector = document.getElementById('sectorSelect')?.value || '';
+  if (!sector) { alert('من فضلك اختر قطاع اولا'); return; }
+      if (typeof toggleStationDropdown === 'function') toggleStationDropdown();
+      // Safeguard: clamp dropdown within viewport after it opens
+      requestAnimationFrame(() => {
+        const list = document.getElementById('stationDropdownList');
+        if (!list) return;
+        // Ensure compact max sizes relative to viewport
+        list.style.maxWidth = 'min(95vw, 420px)';
+        list.style.maxHeight = 'min(70vh, 420px)';
+        list.style.overflowY = 'auto';
+        list.style.boxSizing = 'border-box';
+        // Always open downward with gentle gutter; allow the inner list to scroll if taller than viewport
+        list.style.bottom = 'auto';
+        list.style.top = 'calc(100% + 8px)';
+        list.style.right = '';
+        list.style.left = '';
+      });
+    }
+  </script>
+  <script>
+    // Ensure the table re-renders after any save action completes
+    (function ensurePostSaveRerender() {
+      if (window.__weaponsSaveRerender) return;
+      const queueRerender = () => {
+        try {
+          if (typeof window.rerenderWeaponsTable === 'function') {
+            window.rerenderWeaponsTable({ preserveScroll: true, forceReload: true });
+          } else if (typeof window.applyFilter === 'function') {
+            window.applyFilter();
+          }
+        } catch (error) {
+          console.warn('Post-save rerender failed', error);
+        }
+      };
+
+      const hookSave = () => {
+        const original = window.saveCSV;
+        if (typeof original !== 'function') return false;
+        if (original.__postRerenderHooked) return true;
+        const wrapped = function wrappedSaveCSV(...args) {
+          let result;
+          try {
+            result = original.apply(this, args);
+          } catch (error) {
+            queueRerender();
+            throw error;
+          }
+          Promise.resolve(result)
+            .then(queueRerender)
+            .catch((err) => {
+              console.warn('saveCSV failed', err);
+              queueRerender();
+            });
+          return result;
+        };
+        wrapped.__postRerenderHooked = true;
+        window.saveCSV = wrapped;
+        return true;
+      };
+
+      if (!hookSave()) {
+        const start = Date.now();
+        const poll = setInterval(() => {
+          if (hookSave() || Date.now() - start > 10000) {
+            clearInterval(poll);
+          }
+        }, 250);
+      }
+    })();
+  </script>
+  <script>
+    // Global button cooldown to prevent rapid spamming
+    document.addEventListener('DOMContentLoaded', () => {
+      const root = document.body;
+      if (!root) return;
+      const COOLDOWN_MS = 500;
+      root.addEventListener('click', (event) => {
+        const btn = event.target instanceof Element ? event.target.closest('button') : null;
+        if (!btn || btn.disabled || btn.dataset.lockDisabled === '1' || btn.hasAttribute('data-skip-cooldown')) return;
+        const lockId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        btn.dataset.cooldownLock = lockId;
+        btn.classList.add('btn-cooldown');
+        btn.disabled = true;
+        setTimeout(() => {
+          if (btn.dataset.cooldownLock !== lockId) return;
+          btn.classList.remove('btn-cooldown');
+          delete btn.dataset.cooldownLock;
+          if (btn.dataset.lockDisabled === '1' || btn.getAttribute('aria-disabled') === 'true') return;
+          btn.disabled = false;
+        }, COOLDOWN_MS);
+      });
+    });
+  </script>
+  <script>
+    // Ensure the page fully reloads when the user navigates back (so dynamic widgets re-initialize)
+    // This addresses back/forward restoration cases where the sheet may come from bfcache
+    // causing event handlers or hand-built dropdowns to not work. We reload once on pageshow/back-forward.
+    (function() {
+      let reloaded = false;
+      window.addEventListener('pageshow', (ev) => {
+        // ev.persisted is true when page is restored from BFCache in some browsers
+        // Navigation type 'back_forward' covers history.back()/forward() in other cases
+        const navType = (performance && performance.getEntriesByType)
+          ? (performance.getEntriesByType('navigation')[0] || {}).type
+          : (performance && performance.navigation ? performance.navigation.type : null);
+        const isBack = ev.persisted || navType === 'back_forward' || (ev.type === 'pageshow' && window.performance && window.performance.navigation && window.performance.navigation.type === 2);
+        if (isBack && !reloaded) {
+          reloaded = true;
+          // Force reload disabled for now; preserving for future upgrade hooks
+          // try { location.reload(); } catch (e) { /* best-effort */ }
+        }
+      }, false);
+
+      // Also handle explicit 'back' button elements that call history.back()
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest && e.target.closest('.back-button, [data-action="back"], button[rel~="back"]');
+        if (!btn) return;
+        // Allow default navigation, then reload when the page is shown again (pageshow handler will run).
+        // As a fallback, set a short timeout to reload current window after history.back() returns.
+        setTimeout(() => { /* no-op: rely on pageshow */ }, 50);
+      });
+    })();
+  </script>
+</body>
+</html>

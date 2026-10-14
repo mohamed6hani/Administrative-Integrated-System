@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Administrative Integrated System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <script src="/activity-core.js" defer></script>
+    <script src="/activity-overlays.js" defer></script>
+    <script src="libs/qrcode.min.js"></script>
+</head>
+<body>
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+    <!-- Header / Ribbon -->
+    <header class="ribbon">
+        <button type="button" class="btn btn-exit-top" id="btnExitApp" onclick="exitApplication()">
+            <i class="fas fa-right-from-bracket"></i> خروج
+        </button>
+        <div class="ribbon-brand">
+            <i class="fas fa-shield-halved"></i>
+            <span>إدارة شركات الحراسة و نقل الأموال</span>
+        </div>
+        <div class="ribbon-date" id="ribbonDate"></div>
+    </header>
+
+    <main class="container">
+        <!-- Card 1: Search & Filters -->
+        <div class="card search-card">
+            <div class="card-header">
+                <div class="search-card-title">
+                    <i class="fas fa-search"></i>
+                    <span>بحث و تصفية</span>
+                </div>
+                <div class="activity-bookmarks" id="activityBookmarks">
+                    <button type="button" class="btn-show-all-companies active" data-activity-filter="all" onclick="setActivityFilter('all')">الكل</button>
+                    <button type="button" class="activity-bookmark-btn btn-activity-all" data-activity-filter="both" onclick="setActivityFilter('both')">حراسة المنشئات و نقل الاموال</button>
+                    <button type="button" class="activity-bookmark-btn btn-activity-guard" data-activity-filter="guard" onclick="setActivityFilter('guard')">حراسة منشئات</button>
+                    <button type="button" class="activity-bookmark-btn btn-activity-transfer" data-activity-filter="transfer" onclick="setActivityFilter('transfer')">نقل والاموال</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="search-row">
+                    <div class="search-field">
+                        <label for="searchName">اسم الشركة</label>
+                        <input type="text" id="searchName" placeholder="ابحث باسم الشركة..." oninput="searchCompanies()">
+                    </div>
+                    <div class="search-field">
+                        <label for="searchLicense">رقم الرخصة</label>
+                        <input type="text" id="searchLicense" placeholder="ابحث برقم الرخصة..." oninput="searchCompanies()">
+                    </div>
+                    <div class="search-field">
+                        <label for="searchSector">القطاع</label>
+                        <select id="searchSector" onchange="searchCompanies()">
+                            <option value="">-- الكل --</option>
+                            <option value="east">شرق</option>
+                            <option value="west">غرب</option>
+                            <option value="south">جنوب</option>
+                            <option value="north">شمال</option>
+                            <option value="sectorfive">القطاع التجريبي الخامس</option>
+                        </select>
+                    </div>
+                    <div class="search-field search-btn-wrap">
+                        <button class="btn btn-secondary" onclick="clearSearch()">
+                            <i class="fas fa-eraser"></i> مسح
+                        </button>
+                        <button class="btn btn-expired-filter" id="btnExpiredFilter" onclick="toggleExpiredFilter()">
+                            <i class="fas fa-clock-rotate-left"></i> يجب التجديد
+                        </button>
+                        <button class="btn btn-suspended-filter" id="btnSuspendedFilter" onclick="toggleSuspendedFilter()">
+                            <i class="fas fa-ban"></i> موقوفة
+                        </button>
+                    </div>
+                </div>
+                <div class="search-row" style="margin-top: 10px;">
+                    <div class="search-field">
+                        <label>سنة التجديد</label>
+                        <div class="year-dropdown" id="yearDropdown">
+                            <button type="button" class="year-dropdown-btn" id="yearDropdownBtn" onclick="toggleYearDropdown()">
+                                <span id="yearDropdownLabel">-- الكل --</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="year-dropdown-menu hidden" id="yearDropdownMenu">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Table -->
+        <div class="card table-card">
+            <div class="card-header">
+                <i class="fas fa-building"></i>
+                <span>سجل الشركات</span>
+                <span class="badge" id="companyCount">0</span>
+                <button class="btn btn-success btn-sm btn-add-left" id="btnAddCompany" onclick="openAddModal()">
+                    <i class="fas fa-plus"></i> إضافة شركة
+                </button>
+                <button class="btn btn-print btn-sm" id="btnPrintCompanies" onclick="printCompanyRegister()">
+                    <i class="fas fa-print"></i> طباعة
+                </button>
+            </div>
+            <div class="card-body table-wrapper">
+                <table class="data-table" id="companiesTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>اسم الشركة</th>
+                            <th>رقم الرخصة</th>
+                            <th>تاريخ الاصدار</th>
+                            <th>تاريخ التجديد</th>
+                            <th>نوع النشاط</th>
+                            <th>عنوان مقر الشركة</th>
+                            <th>القطاع</th>
+                            <th>حالة الشركة</th>
+                            <th>ملاحظات</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="companiesBody">
+                        <!-- Rows rendered by JS -->
+                    </tbody>
+                </table>
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-inbox"></i>
+                    <p>لا توجد شركات مسجلة</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== Detail / View Modal (Full Screen) ===== -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal modal-fullscreen">
+            <div class="modal-header">
+                <h2 id="modalTitle">تفاصيل الشركة</h2>
+                <div class="modal-header-actions">
+                    <button class="btn btn-warning" id="btnEdit" onclick="toggleEdit()">
+                        <i class="fas fa-pen"></i> تعديل
+                    </button>
+                    <button class="btn btn-success hidden" id="btnSave" onclick="saveCompany()">
+                        <i class="fas fa-floppy-disk"></i> حفظ
+                    </button>
+                    <button class="btn btn-danger-outline hidden" id="btnCancel" onclick="cancelEdit()">
+                        <i class="fas fa-xmark"></i> الغاء
+                    </button>
+                    <button class="btn btn-close" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Tab Navigation -->
+            <div class="modal-tabs" id="modalTabs">
+                <button type="button" class="modal-tab active" data-tab="tab-basic" onclick="switchModalTab('tab-basic')">
+                    <i class="fas fa-info-circle"></i>
+                    <span>البيانات الأساسية</span>
+                </button>
+                <button type="button" class="modal-tab" data-tab="tab-locations" onclick="switchModalTab('tab-locations')">
+                    <i class="fas fa-map-location-dot"></i>
+                    <span>مواقع الحراسة</span>
+                </button>
+                <button type="button" class="modal-tab" data-tab="tab-licenses" onclick="switchModalTab('tab-licenses')">
+                    <i class="fas fa-id-badge"></i>
+                    <span>رخص المزاولة</span>
+                </button>
+                <button type="button" class="modal-tab" data-tab="tab-company-cars" onclick="switchModalTab('tab-company-cars')">
+                    <i class="fas fa-truck-moving"></i>
+                    <span>سيارات نقل واموال</span>
+                </button>
+                <button type="button" class="modal-tab" data-tab="tab-inspections" onclick="switchModalTab('tab-inspections')">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>لجنة معاينة</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <form id="companyForm" class="company-form" autocomplete="off">
+                    <input type="hidden" id="companyId">
+
+                    <!-- Page 1: Basic Info -->
+                    <div class="tab-page active" id="tab-basic">
+                        <div class="tab-page-toolbar">
+                            <div class="tab-page-heading">
+                                <i class="fas fa-circle-info"></i>
+                                <span>البيانات الأساسية</span>
+                            </div>
+                            <button type="button" class="btn btn-print btn-sm" id="btnPrintBasicInfo" onclick="printBasicInfoPage()">
+                                <i class="fas fa-print"></i> طباعة
+                            </button>
+                        </div>
+                        <div class="basic-info-split">
+                            <div class="basic-info-image-pane">
+                                <div class="form-group company-image-group">
+                                    <label>صورة الشركة</label>
+                                    <div class="uniform-upload-zone" id="companyImageZone">
+                                        <input type="file" id="companyImageFileInput" accept="image/*" class="hidden" multiple onchange="handleCompanyImageFile(this)">
+                                        <div class="uniform-preview" id="companyImagePreview"></div>
+                                        <div class="uniform-placeholder" id="companyImagePlaceholder">
+                                            <i class="fas fa-building"></i>
+                                            <span>لا توجد صورة</span>
+                                        </div>
+                                        <div class="uniform-actions hidden" id="companyImageActions">
+                                            <button type="button" class="btn-uniform btn-uniform-upload" onclick="document.getElementById('companyImageFileInput').click()" title="رفع صورة">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn-uniform btn-uniform-remove" onclick="removeCompanyImage()" title="حذف الصورة">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div class="attachment-strip hidden" id="companyImageList"></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>الزي المرخص للشركة</label>
+                                    <div class="uniform-upload-zone" id="uniformZone">
+                                        <input type="file" id="uniformFileInput" accept="image/*,.pdf" class="hidden" multiple onchange="handleUniformFile(this)">
+                                        <div class="uniform-preview" id="uniformPreview"></div>
+                                        <div class="uniform-placeholder" id="uniformPlaceholder">
+                                            <i class="fas fa-image"></i>
+                                            <span>لا توجد صورة</span>
+                                        </div>
+                                        <div class="uniform-actions hidden" id="uniformActions">
+                                            <button type="button" class="btn-uniform btn-uniform-upload" onclick="document.getElementById('uniformFileInput').click()" title="رفع صورة">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn-uniform btn-uniform-remove" onclick="removeUniform()" title="حذف الصورة">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div class="attachment-strip hidden" id="uniformList"></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>صورة الرخصة</label>
+                                    <div class="uniform-upload-zone" id="licenseZone">
+                                        <input type="file" id="licenseFileInput" accept="image/*,.pdf" class="hidden" multiple onchange="handleLicenseFile(this)">
+                                        <div class="uniform-preview" id="licensePreview"></div>
+                                        <div class="uniform-placeholder" id="licensePlaceholder">
+                                            <i class="fas fa-id-card"></i>
+                                            <span>لا توجد صورة</span>
+                                        </div>
+                                        <div class="uniform-actions hidden" id="licenseActions">
+                                            <button type="button" class="btn-uniform btn-uniform-upload" onclick="document.getElementById('licenseFileInput').click()" title="رفع صورة">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn-uniform btn-uniform-remove" onclick="removeLicenseImage()" title="حذف الصورة">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div class="attachment-strip hidden" id="licenseList"></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>شعار الشركة</label>
+                                    <div class="uniform-upload-zone" id="companyLogoZone">
+                                        <input type="file" id="companyLogoFileInput" accept="image/*" class="hidden" multiple onchange="handleCompanyLogoFile(this)">
+                                        <div class="uniform-preview" id="companyLogoPreview"></div>
+                                        <div class="uniform-placeholder" id="companyLogoPlaceholder">
+                                            <i class="fas fa-shield-halved"></i>
+                                            <span>لا يوجد شعار</span>
+                                        </div>
+                                        <div class="uniform-actions hidden" id="companyLogoActions">
+                                            <button type="button" class="btn-uniform btn-uniform-upload" onclick="document.getElementById('companyLogoFileInput').click()" title="رفع شعار">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn-uniform btn-uniform-remove" onclick="removeCompanyLogo()" title="حذف الشعار">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div class="attachment-strip hidden" id="companyLogoList"></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group gps-image-group">
+                                    <label>موقع ال GPS</label>
+                                    <div class="uniform-upload-zone" id="gpsImageZone">
+                                        <input type="file" id="gpsImageFileInput" accept="image/*" class="hidden" multiple onchange="handleGpsImageFile(this)">
+                                        <div class="uniform-preview" id="gpsImagePreview"></div>
+                                        <div class="uniform-placeholder" id="gpsImagePlaceholder">
+                                            <i class="fas fa-location-dot"></i>
+                                            <span>لا توجد صورة</span>
+                                        </div>
+                                        <div class="uniform-actions hidden" id="gpsImageActions">
+                                            <button type="button" class="btn-uniform btn-uniform-upload" onclick="document.getElementById('gpsImageFileInput').click()" title="رفع صورة">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                            <button type="button" class="btn-uniform btn-uniform-remove" onclick="removeGpsImage()" title="حذف الصورة">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div class="attachment-strip hidden" id="gpsImageList"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="basic-info-divider" aria-hidden="true"></div>
+
+                            <div class="basic-info-fields-pane">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="fCompanyName">اسم الشركة</label>
+                                        <input type="text" id="fCompanyName" oninput="queueDuplicateValidation()" onblur="validateDuplicateFields()" disabled>
+                                        <small id="companyDuplicateMsg" class="field-error-message hidden">اسم الشركة مضاف بالفعل</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fLicenseNumber">رقم الرخصة</label>
+                                        <input type="text" id="fLicenseNumber" oninput="queueDuplicateValidation()" onblur="validateDuplicateFields()" disabled>
+                                        <small id="licenseDuplicateMsg" class="field-error-message hidden">هذه الرخصة مضافة بالفعل داخل نفس القطاع</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fIssueDate">تاريخ الاصدار</label>
+                                        <input type="text" id="fIssueDate" placeholder="يوم/شهر/سنة" onblur="handleDateBlur(this)" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fRenewalDate">تاريخ التجديد</label>
+                                        <input type="text" id="fRenewalDate" placeholder="يوم/شهر/سنة" onblur="handleDateBlur(this)" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fActivityType">نوع النشاط</label>
+                                        <select id="fActivityType" disabled>
+                                            <option value="">-- اختر --</option>
+                                            <option value="حراسة منشئات">حراسة منشئات</option>
+                                            <option value="نقل الاموال">نقل الاموال</option>
+                                            <option value="حراسة المنشئات و نقل الاموال">حراسة المنشئات و نقل الاموال</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fSector">القطاع</label>
+                                        <select id="fSector" onchange="updateStationDropdown(); queueDuplicateValidation()" disabled>
+                                            <option value="">-- اختر القطاع --</option>
+                                            <option value="east">شرق</option>
+                                            <option value="west">غرب</option>
+                                            <option value="south">جنوب</option>
+                                            <option value="north">شمال</option>
+                                            <option value="sectorfive">القطاع التجريبي الخامس</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fStation">القسم</label>
+                                        <select id="fStation" disabled>
+                                            <option value="">-- اختر القطاع أولاً --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fHeadquarters">عنوان مقر الشركة</label>
+                                        <input type="text" id="fHeadquarters" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fCompanyStatus">حالة الشركة</label>
+                                        <select id="fCompanyStatus" disabled>
+                                            <option value="تعمل">تعمل</option>
+                                            <option value="موقوفة">موقوفة</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fBasicTotalGuards">اجمالي الحراس العاملين بالشركة</label>
+                                        <input type="text" id="fBasicTotalGuards" inputmode="numeric" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fTotalSites">اجمالي عدد المواقع</label>
+                                        <input type="text" id="fTotalSites" inputmode="numeric" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fTotalCompanyCars">اجمالي عدد السيارات النقل والاموال</label>
+                                        <input type="text" id="fTotalCompanyCars" inputmode="numeric" disabled>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="fNotes">ملاحظات</label>
+                                        <textarea id="fNotes" rows="2" disabled></textarea>
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="fBranches">فروع</label>
+                                        <textarea id="fBranches" rows="2" disabled></textarea>
+                                    </div>
+                                    <div class="form-group full-width qr-section">
+                                        <label for="fGpsLink">رابط الموقع</label>
+                                        <input type="text" id="fGpsLink" placeholder="الصق رابط GPS هنا..." disabled>
+                                        <button type="button" class="btn btn-primary btn-sm btn-qr-generate hidden" id="btnGenerateQR" onclick="generateAndSaveQR()">
+                                            <i class="fas fa-qrcode"></i> تفعيل ال QR Code
+                                        </button>
+                                        <div id="qrPreviewContainer" class="qr-preview-container"></div>
+                                    </div>
+                                </div>
+
+                                <div class="basic-subsection-heading">
+                                    <i class="fas fa-users"></i>
+                                    <span>مجلس الادارة</span>
+                                </div>
+                                <div class="guarded-tools-divider" aria-hidden="true"></div>
+
+                                <div class="board-members-panel">
+                                    <div class="guarded-search-bar" id="membersSearchBar">
+                                        <input type="text" id="membersSearchInput" class="board-member-field" placeholder="بحث بالاسم..." oninput="filterMembers()">
+                                        <select id="membersFilterRole" class="board-member-field" onchange="filterMembers()">
+                                            <option value="">-- كل الصفات --</option>
+                                        <option value="رئيس مجلس الادارة">رئيس مجلس الادارة</option>
+                                        <option value="الاعضاء">الاعضاء</option>
+                                        <option value="مسؤل الامن">مسؤل الامن</option>
+                                        <option value="مسؤل العهدة">مسؤل العهدة</option>
+                                        <option value="مندوب الشركة">مندوب الشركة</option>
+                                    </select>
+                                </div>
+                                <div class="members-toolbar hidden" id="membersToolbar">
+                                    <select id="newMemberRole" class="board-member-field">
+                                        <option value="رئيس مجلس الادارة">رئيس مجلس الادارة</option>
+                                        <option value="الاعضاء">الاعضاء</option>
+                                        <option value="مسؤل الامن">مسؤل الامن</option>
+                                        <option value="مسؤل العهدة">مسؤل العهدة</option>
+                                        <option value="مندوب الشركة">مندوب الشركة</option>
+                                    </select>
+                                        <input type="text" id="newMemberName" class="board-member-field" placeholder="اسم العضو...">
+                                        <input type="text" id="newMemberPhone" class="board-member-field" placeholder="رقم التليفون..." inputmode="numeric">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addMemberRow()">
+                                            <i class="fas fa-plus"></i> اضافة
+                                        </button>
+                                    </div>
+                                    <table class="members-table board-members-table">
+                                        <thead>
+                                            <tr>
+                                                <th>الصفة</th>
+                                                <th>الاسم</th>
+                                                <th>رقم التليفون</th>
+                                                <th class="col-action hidden" id="memberActionHeader">حذف</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="membersBody">
+                                        </tbody>
+                                    </table>
+                                    <p class="empty-members hidden" id="emptyMembers">لا يوجد أعضاء مسجلين</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Page 3: Guarded Locations -->
+                    <div class="tab-page" id="tab-locations">
+                        <div class="locations-fields-pane">
+                                <div class="form-group">
+                                    <label for="fTotalGuards">اجمالي الحراس العاملين بالشركة</label>
+                                    <input type="text" id="fTotalGuards" inputmode="numeric" disabled>
+                                </div>
+                                <div class="guarded-search-bar" id="guardedSearchBar" style="margin-top:14px">
+                                    <input type="text" id="guardedSearchInput" placeholder="بحث في المواقع..." oninput="filterGuardedLocations()">
+                                    <select id="guardedSearchDirector" onchange="filterGuardedLocations()">
+                                        <option value="">-- كل المديريات --</option>
+                                    </select>
+                                    <select id="guardedSearchSector" onchange="filterGuardedLocations()">
+                                        <option value="">-- كل القطاعات --</option>
+                                        <option value="east">شرق</option>
+                                        <option value="west">غرب</option>
+                                        <option value="south">جنوب</option>
+                                        <option value="north">شمال</option>
+                                        <option value="sectorfive">القطاع التجريبي الخامس</option>
+                                    </select>
+                                    <button type="button" class="btn btn-print btn-sm" id="btnPrintGuarded" onclick="printGuardedLocations()">
+                                        <i class="fas fa-print"></i> طباعة
+                                    </button>
+                                </div>
+                                <div class="guarded-tools-divider" aria-hidden="true"></div>
+                                <table class="members-table">
+                                    <thead>
+                                        <tr>
+                                            <th>اسم الموقع</th>
+                                            <th>عنوان الموقع</th>
+                                            <th>اسم الجهة تجريبية</th>
+                                            <th>عدد الحراس</th>
+                                            <th>القطاع</th>
+                                            <th>القسم</th>
+                                            <th class="col-action hidden" id="guardedLocationActionHeader">حذف</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="guardedLocationsBody">
+                                    </tbody>
+                                </table>
+                                <p class="empty-members hidden" id="emptyGuardedLocations">لا يوجد مواقع مسجلة</p>
+                        </div>
+                    </div>
+
+                    <!-- Page 5: Guard Licenses -->
+                    <div class="tab-page" id="tab-licenses">
+                        <div class="guarded-search-bar" id="guardLicensesSearchBar">
+                            <input type="text" id="guardLicenseSearchNumber" placeholder="بحث برقم الرخصة..." oninput="filterGuardLicenses()">
+                            <input type="text" id="guardLicenseSearchName" placeholder="بحث باسم الحارس..." oninput="filterGuardLicenses()">
+                            <select id="guardLicenseSearchSector" onchange="filterGuardLicenses()">
+                                <option value="">-- كل القطاعات --</option>
+                                <option value="east">شرق</option>
+                                <option value="west">غرب</option>
+                                <option value="south">جنوب</option>
+                                <option value="north">شمال</option>
+                                <option value="sectorfive">القطاع التجريبي الخامس</option>
+                            </select>
+                            <select id="guardLicenseSearchActivity" onchange="filterGuardLicenses()">
+                                <option value="">-- كل الأنشطة --</option>
+                                <option value="حراسة منشئات">حراسة منشئات</option>
+                                <option value="نقل الاموال">نقل الاموال</option>
+                                <option value="حراسة المنشئات و نقل الاموال">حراسة المنشئات و نقل الاموال</option>
+                            </select>
+                            <button type="button" class="btn btn-print btn-sm" id="btnPrintGuardLicenses" onclick="printGuardLicenses()">
+                                <i class="fas fa-print"></i> طباعة
+                            </button>
+                        </div>
+                        <div class="guarded-tools-divider" aria-hidden="true"></div>
+                        <table class="members-table guard-licenses-table">
+                            <thead>
+                                <tr>
+                                    <th>رقم الرخصة</th>
+                                    <th>اسم الحارس</th>
+                                    <th>نوع النشاط</th>
+                                    <th>رخص السلاح</th>
+                                    <th>بيان السلاح</th>
+                                    <th>تاريخ الانتهاء</th>
+                                    <th>تاريخ الايصدار</th>
+                                    <th>تاريخ التجديد</th>
+                                    <th>القطاع</th>
+                                    <th>القسم</th>
+                                    <th class="col-action hidden" id="guardLicenseActionHeader">حذف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="guardLicensesBody"></tbody>
+                        </table>
+                        <p class="empty-members hidden" id="emptyGuardLicenses">لا يوجد رخص مسجلة</p>
+                    </div>
+
+                    <!-- Page 6: Company Cars -->
+                    <div class="tab-page" id="tab-company-cars">
+                        <input type="file" id="companyCarFileInput" accept="image/*" class="hidden" onchange="handleCompanyCarFile(this)">
+
+                        <div class="company-cars-tab">
+                            <div class="card company-cars-search-card">
+                                <div class="card-header">
+                                    <i class="fas fa-filter"></i>
+                                    <span>بحث و تصفية السيارات</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="search-row company-cars-search-row">
+                                        <div class="search-field">
+                                            <label for="companyCarsSearchNumber">رقم السيارة</label>
+                                            <input type="text" id="companyCarsSearchNumber" placeholder="ابحث برقم السيارة..." oninput="filterCompanyCars()">
+                                        </div>
+                                        <div class="search-field">
+                                            <label for="companyCarsSearchYear">سنة التجديد</label>
+                                            <select id="companyCarsSearchYear" onchange="filterCompanyCars()">
+                                                <option value="">-- كل السنوات --</option>
+                                            </select>
+                                        </div>
+                                        <div class="search-field">
+                                            <label for="companyCarsSearchType">نوع السيارة</label>
+                                            <select id="companyCarsSearchType" onchange="filterCompanyCars()">
+                                                <option value="">-- كل الأنواع --</option>
+                                                <option value="مصفحة">مصفحة</option>
+                                                <option value="غير مصفحة">غير مصفحة</option>
+                                            </select>
+                                        </div>
+                                        <div class="search-field search-btn-wrap">
+                                            <button type="button" class="btn btn-print" id="btnPrintCompanyCars" onclick="printCompanyCars()">
+                                                <i class="fas fa-print"></i> طباعة
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card table-card company-cars-table-card">
+                                <div class="card-header">
+                                    <i class="fas fa-truck-moving"></i>
+                                    <span>سيارات نقل واموال</span>
+                                    <span class="badge" id="companyCarsCount">0</span>
+                                </div>
+                                <div class="card-body table-wrapper">
+                                    <table class="members-table company-cars-table">
+                                        <thead>
+                                            <tr>
+                                                <th>رقم السيارة</th>
+                                                <th>تجديد السيارة</th>
+                                                <th>نوع السيارة</th>
+                                                <th>صورة السيارة</th>
+                                                <th class="col-action hidden" id="companyCarActionHeader">حذف</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="companyCarsBody"></tbody>
+                                    </table>
+                                    <p class="empty-members hidden" id="emptyCompanyCars">لا يوجد سيارات مسجلة</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Page 7: Inspection Committee -->
+                    <div class="tab-page" id="tab-inspections">
+                        <div class="guarded-search-bar" id="inspectionSearchBar">
+                            <input type="text" id="inspectionSearchName" placeholder="بحث بنوع اللجنة أو التاريخ أو القرار..." oninput="filterInspections()">
+                            <button type="button" class="btn btn-print btn-sm" id="btnPrintInspections" onclick="printInspections()">
+                                <i class="fas fa-print"></i> طباعة
+                            </button>
+                        </div>
+                        <div class="inspection-toolbar hidden" id="inspectionToolbar">
+                            <button type="button" class="btn btn-sm btn-success" onclick="addInspectionRow()">
+                                <i class="fas fa-plus"></i> إضافة لجنة
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="deleteSelectedInspections()">
+                                <i class="fas fa-trash"></i> حذف المحدد
+                            </button>
+                        </div>
+                        <div class="guarded-tools-divider" aria-hidden="true"></div>
+                        <table class="members-table inspection-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-action hidden" id="inspectionSelectHeader">
+                                        <input type="checkbox" id="inspectionSelectAll" onchange="toggleAllInspectionSelection(this)">
+                                    </th>
+                                    <th>نوع اللجنة</th>
+                                    <th>تاريخ انعفاد اللجنة</th>
+                                    <th>قرار اللجنة</th>
+                                    <th>محضر اللجنة</th>
+                                    <th class="col-action hidden" id="inspectionActionHeader">حذف</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inspectionsBody"></tbody>
+                        </table>
+                        <p class="empty-members hidden" id="emptyInspections">لا يوجد لجان مسجلة</p>
+
+                        <!-- File Attachment Frame (overlay inside tab) -->
+                        <div class="inspection-files-frame hidden" id="inspectionFilesFrame">
+                            <div class="inspection-files-frame-header">
+                                <h3 id="inspectionFilesTitle">مرفقات اللجنة</h3>
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="closeInspectionFilesFrame()">
+                                    <i class="fas fa-xmark"></i> إغلاق
+                                </button>
+                            </div>
+                            <div class="inspection-files-list" id="inspectionFilesList">
+                                <!-- files rendered here -->
+                            </div>
+                            <div class="inspection-files-upload hidden" id="inspectionFilesUploadZone">
+                                <input type="file" id="inspectionFilesInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" class="hidden" onchange="handleInspectionFiles(this)">
+                                <button type="button" class="btn btn-sm btn-success" onclick="document.getElementById('inspectionFilesInput').click()">
+                                    <i class="fas fa-plus"></i> إضافة مرفقات
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal modal-sm">
+            <div class="modal-header modal-header-danger">
+                <h2><i class="fas fa-triangle-exclamation"></i> تأكيد الحذف</h2>
+            </div>
+            <div class="modal-body center-text">
+                <p>هل أنت متأكد من حذف هذه الشركة؟</p>
+                <p class="text-muted">لا يمكن التراجع عن هذا الإجراء</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">
+                    <i class="fas fa-trash"></i> حذف
+                </button>
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">
+                    <i class="fas fa-xmark"></i> إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Draft Confirmation -->
+    <div class="modal-overlay" id="pendingDraftModal">
+        <div class="modal modal-sm">
+            <div class="modal-header modal-header-warning">
+                <h2><i class="fas fa-circle-exclamation"></i> بيانات غير مضافة</h2>
+            </div>
+            <div class="modal-body center-text">
+                <p>يوجد بيانات مكتوبة ولم يتم الضغط على زر الإضافة بعد.</p>
+                <ul class="pending-draft-list" id="pendingDraftList"></ul>
+                <p class="text-muted">هل تريد إضافتها أولاً ثم إكمال الحفظ؟</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="confirmPendingDraftSave()">
+                    <i class="fas fa-plus"></i> إضافة ثم حفظ
+                </button>
+                <button class="btn btn-secondary" onclick="closePendingDraftModal()">
+                    <i class="fas fa-xmark"></i> إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/delete-approval-user-notice.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>

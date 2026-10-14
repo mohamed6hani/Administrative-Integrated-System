@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrative Integrated System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/activity-core.js" defer></script>
+    <script src="/reference-runtime.js" defer></script>
+    <script src="/activity-overlays.js" defer></script>
+</head>
+<body data-page="record">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+    <header>
+        <button type="button" class="back-button" data-target="index.html">عودة</button>
+        <div class="container">
+            <span class="record-header-label">سجل الطلب</span>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="card record-details">
+            <div class="record-details-heading">
+                <div class="record-heading-meta" aria-live="polite">
+                    <div class="record-heading-pill">
+                        <span class="record-heading-pill-label">القطاع</span>
+                        <span class="record-heading-pill-value detail-value" id="detailSector">—</span>
+                        <select class="detail-input hidden record-heading-select" id="detailSectorInput" data-input-field="sector">
+                            <option value="">اختر القطاع</option>
+                        </select>
+                    </div>
+                    <div class="record-heading-pill">
+                        <span class="record-heading-pill-label">القسم</span>
+                        <span class="record-heading-pill-value detail-value" id="detailStation">—</span>
+                        <select class="detail-input hidden record-heading-select" id="detailStationInput" data-input-field="station" disabled>
+                            <option value="">اختر القسم</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="record-detail-actions">
+                    <button type="button" class="record-print-btn" id="printRecordBtn">طباعة</button>
+                    <button type="button" class="record-edit-btn" id="editRecordBtn">تعديل</button>
+                    <button type="button" class="record-cancel-btn hidden" id="cancelRecordBtn">إلغاء</button>
+                    <button type="button" class="record-save-btn hidden" id="saveRecordBtn">حفظ</button>
+                </div>
+            </div>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">الاسم:</span>
+                    <span class="detail-value" id="detailName">—</span>
+                    <input type="text" class="detail-input hidden" id="detailNameInput" data-input-field="name" autocomplete="off">
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">تاريخ التقديم:</span>
+                    <span class="detail-value" id="detailApplicationDate">—</span>
+                    <input type="text" class="detail-input hidden" id="detailApplicationDateInput" data-input-field="applicationDate" placeholder="dd/mm/yyyy" autocomplete="off">
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">الوظيفة:</span>
+                    <span class="detail-value" id="detailJob">—</span>
+                    <input type="text" class="detail-input hidden" id="detailJobInput" data-input-field="job" autocomplete="off">
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">الرقم القومي:</span>
+                    <span class="detail-value" id="detailNationalId">—</span>
+                    <input type="text" class="detail-input hidden" id="detailNationalIdInput" data-input-field="nationalId" autocomplete="off">
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">العنوان:</span>
+                    <span class="detail-value" id="detailAddress">—</span>
+                    <input type="text" class="detail-input hidden" id="detailAddressInput" data-input-field="address" autocomplete="off">
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">نوع الترخيص:</span>
+                    <span class="detail-value" id="detailLicenseType">—</span>
+                    <select class="detail-input hidden" id="detailLicenseTypeInput" data-input-field="licenseType">
+                        <option value="">اختر نوع الترخيص</option>
+                    </select>
+                    <input type="text" class="detail-input hidden license-type-other-input" id="detailLicenseTypeOtherInput" data-input-field="licenseTypeOther" placeholder="حدد نوع الترخيص" autocomplete="off">
+                </div>
+                <div class="detail-item detail-item-wide">
+                    <span class="detail-label">السلاح المطلوب:</span>
+                    <span class="detail-value multiline" id="detailWeaponData">—</span>
+                    <textarea class="detail-input hidden" id="detailWeaponDataInput" data-input-field="weaponData" rows="3" placeholder="أدخل السلاح المطلوب" autocomplete="off"></textarea>
+                </div>
+            </div>
+            <div class="detail-directorates" id="detailDirectorateSection">
+                <p class="detail-label">الإدارات</p>
+                <p class="detail-hint">يعرض الجدول بيانات الصادر والوارد ونتائج الكشف والملاحظات لكل إدارة. قم بتفعيل الإدارات المطلوبة لتحديث بياناتها.</p>
+                <div class="directorate-checklist" id="detailDirectorateChecklist" aria-live="polite"></div>
+                <div class="field-error detail-field-error" id="detailDirectorateError" aria-live="polite"></div>
+            </div>
+            <div class="details-grid detail-bottom-grid">
+                <div class="detail-item">
+                    <span class="detail-label">تاريخ الموافقة:</span>
+                    <span class="detail-value" id="detailApprovalDate">—</span>
+                    <input type="text" class="detail-input hidden" id="detailApprovalDateInput" data-input-field="approvalDate" placeholder="dd/mm/yyyy" autocomplete="off">
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">رقم تصريح الشراء:</span>
+                    <span class="detail-value" id="detailPurchasePermit">—</span>
+                    <input type="text" class="detail-input hidden" id="detailPurchasePermitInput" data-input-field="purchasePermit" autocomplete="off">
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">رقم الرخصة المنصرفة:</span>
+                    <span class="detail-value" id="detailLicenseNumber">—</span>
+                    <input type="text" class="detail-input hidden" id="detailLicenseNumberInput" data-input-field="licenseNumber" autocomplete="off">
+                </div>
+            </div>
+            <div class="details-grid detail-notes-grid">
+                <div class="detail-item detail-item-wide">
+                    <span class="detail-label">ملاحظات:</span>
+                    <span class="detail-value multiline" id="detailNotes">—</span>
+                    <textarea class="detail-input hidden" id="detailNotesInput" data-input-field="notes" rows="3" placeholder="أدخل الملاحظات" autocomplete="off"></textarea>
+                </div>
+            </div>
+            <div class="record-form-message" id="recordFormMessage" aria-live="polite"></div>
+            <div class="details-placeholder">
+                <p>سيتم استكمال باقي التفاصيل الخاصة بالسجل لاحقاً.</p>
+            </div>
+        </div>
+    </main>
+    <script src="app.js" defer></script>
+</body>
+</html>

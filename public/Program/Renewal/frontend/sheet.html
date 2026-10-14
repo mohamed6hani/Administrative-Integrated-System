@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Administrative Integrated System</title>
+<link rel="stylesheet" href="style.css" />
+<script src="/activity-core.js" defer></script>
+<script src="/reference-runtime.js" defer></script>
+<script src="/activity-overlays.js" defer></script>
+<script src="/delete-approval-user-notice.js" defer></script>
+
+</head>
+<body class="sheet">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+<header>
+  
+  <div class="actions">
+  <button id="logoutBtn" type="button" class="logout-btn-large">خروج</button>
+  </div>
+</header>
+<h3 style="text-align: center;">ملفات لم ترد</h3>
+<main>
+  <div class="card filters">
+    <form id="filterForm" autocomplete="off">
+      <div class="renewal-filter-grid">
+        <div class="renewal-filter-right">
+          <div class="single-line-filters">
+            <div class="field-group field-group--search">
+                <label>البحث</label>
+                <div class="search-column-control search-column-control--icon">
+                  <input name="name" placeholder="ابحث في كل الأعمدة" />
+                  <select id="renewalSearchColumn" name="searchColumn" aria-label="تحديد عمود البحث">
+                    <option value="__all__">كل الأعمدة</option>
+                  </select>
+                </div>
+            </div>
+            <div class="field-group field-group--license">
+              <label>رقم الرخصة</label>
+              <input name="license" placeholder="بحث..." />
+            </div>
+            <div class="field-group field-group--type">
+              <label>نوع الرخصة</label>
+              <div id="typeMulti" class="mdrop renewal-type-dropdown" data-key="types">
+                <button type="button" class="mdrop-toggle">نوع الرخصة</button>
+                <div class="mdrop-menu" hidden>
+                  <div class="mdrop-scroll" id="typeOptions"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="field-group field-group--category">
+            <label>تصنيف البيانات</label>
+            <div class="status-toggle-group renewal-category-group" role="group" aria-label="تصنيف البيانات">
+              <div id="categoryButtons" class="status-toggle-buttons">
+                <button type="button" class="status-toggle-btn is-active" data-value="">الكل</button>
+                <button type="button" class="status-toggle-btn" data-value="has-notes">اسباب عدم ورود الملف</button>
+                <button type="button" class="status-toggle-btn" data-value="no-notes">فارغ</button>
+              </div>
+              <select name="category" id="categorySelect" class="renewal-control-hidden" form="filterForm">
+                <option value="" selected>الكل</option>
+                <option value="has-notes">اسباب عدم ورود الملف</option>
+                <option value="no-notes">فارغ</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="renewal-choice-block renewal-sector-block">
+          <label class="renewal-choice-label" id="renewalSectorLabel">القطاع</label>
+          <div class="sector-stripes-wrapper renewal-sector-stripes-wrapper" role="group" aria-labelledby="renewalSectorLabel">
+            <div class="sector-stripes renewal-sector-stripes" id="sectorStripes"></div>
+          </div>
+          <select name="sector" id="sectorSelect" class="renewal-control-hidden" form="filterForm">
+            <option value="">الكل</option>
+            <option value="شرق">شرق</option>
+            <option value="القطاع التجريبي الخامس">القطاع التجريبي الخامس</option>
+            <option value="شمال">شمال</option>
+            <option value="جنوب">جنوب</option>
+            <option value="غرب">غرب</option>
+          </select>
+        </div>
+
+        <div class="renewal-choice-block renewal-station-block">
+          <label class="renewal-choice-label">القسم</label>
+          <div id="stationButtonsContainer" class="station-buttons-container renewal-station-buttons"></div>
+          <div class="station-selection-container renewal-station-source hidden" aria-hidden="true">
+            <div id="stationCountLabel" class="station-count-label" style="display: none;"></div>
+            <div id="stationMulti" class="mdrop disabled" data-key="stations">
+              <button type="button" class="mdrop-toggle" disabled>القسم</button>
+              <div class="mdrop-menu" hidden>
+                <div class="mdrop-scroll" id="stationOptions"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="card table-card" style="overflow:hidden;">
+    <div class="table-header">
+      <h2>سجل التجديد</h2>
+      <div class="count table-count" id="count"></div>
+      <div class="table-actions">
+        <button type="button" id="saveBtn" class="save-btn">حفظ 🗃️</button>
+        <button type="button" id="renewalInfoBtn" class="info-btn" hidden aria-hidden="true">معلومات</button>
+        <button type="button" id="browserPrintBtn" class="print-btn">طباعة 🖨️</button>
+        <button type="button" id="insertBtn" class="insert-btn">ادراج ➕</button>
+        <button type="button" id="undoBtn" class="undo-btn">استرجاع ⮌</button>
+        <button type="button" id="deleteBtn" class="delete-btn" disabled style="background-color: red; color: white;">حذف المحدد 🗑️</button>
+      </div>
+    </div>
+    <div class="pagination" id="pagination">
+      <span id="pageInfo">صفحة 1 من 1</span>
+      <div class="pagination-buttons">
+        <button type="button" id="prevBtn" disabled>السابق</button>
+        <button type="button" id="nextBtn" disabled>التالي</button>
+      </div>
+    </div>
+    <div class="table-wrapper" id="tableWrapper">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll" title="تحديد الكل" /></th>
+            <th>م</th>
+            <th data-column-filter="رقم الرخصة">رقم الرخصة <button class="sort-btn" data-column="رقم الرخصة" title="من أعلى إلى أسفل">▲▼</button></th>
+            <th data-column-filter="نوع الرخصة">نوع الرخصة <button class="sort-btn" data-column="نوع الرخصة" title="من أعلى إلى أسفل">▲▼</button></th>
+            <th data-column-filter="الاســـــــم">الاسم <button class="sort-btn" data-column="الاســـــــم" title="من أعلى إلى أسفل">▲▼</button></th>
+            <th data-column-filter="القسم">القسم <button class="sort-btn" data-column="القسم" title="من أعلى إلى أسفل">▲▼</button></th>
+            <th data-column-filter="قطاع">القطاع <button class="sort-btn" data-column="قطاع" title="من أعلى إلى أسفل">▲▼</button></th>
+            <th data-column-filter="التجديد">التجديد <button class="sort-btn" data-column="التجديد" title="من أعلى إلى أسفل">▲▼</button></th>
+            <th data-column-filter="ملاحظـــات">ملاحظات</th>
+            <th data-column-filter="صورة">صورة</th>
+            <th data-column-filter="اجراءات">اجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="11" class="empty">تحميل...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="records-per-page records-per-page-bottom">
+      <label for="recordsPerPageSelect">عدد السجلات:</label>
+      <select id="recordsPerPageSelect">
+        <option value="50">50</option>
+        <option value="100" selected>100</option>
+        <option value="250">250</option>
+      </select>
+    </div>
+  </div>
+</main>
+
+<div id="renewalInfoFrame" class="renewal-info-frame" aria-hidden="true">
+  <div class="renewal-info-dialog" role="dialog" aria-modal="true" aria-labelledby="renewalInfoTitle">
+    <div class="renewal-info-header">
+      <div>
+        <div id="renewalInfoTitle" class="renewal-info-title">معلومات الأقسام</div>
+        <div id="renewalInfoSubtitle" class="renewal-info-subtitle">ملخص أسباب عدم ورود الملف</div>
+      </div>
+      <button type="button" id="renewalInfoCloseBtn" class="renewal-info-close">✖</button>
+    </div>
+    <div class="renewal-info-body">
+      <div class="renewal-info-filters" aria-label="تصفية معلومات التجديد">
+        <label class="renewal-info-filter">
+          <span>القطاع</span>
+          <select id="renewalInfoSectorFilter">
+            <option value="">كل القطاعات</option>
+          </select>
+        </label>
+        <label class="renewal-info-filter">
+          <span>القسم</span>
+          <select id="renewalInfoStationFilter">
+            <option value="">كل الأقسام</option>
+          </select>
+        </label>
+      </div>
+      <div id="renewalInfoMeta" class="renewal-info-meta"></div>
+      <div class="renewal-info-table-wrap">
+        <table class="renewal-info-table">
+          <thead>
+            <tr>
+              <th>القسم</th>
+              <th>اسباب عدم ورود الملف</th>
+              <th>فارغ</th>
+            </tr>
+          </thead>
+          <tbody id="renewalInfoTableBody">
+            <tr><td colspan="3" class="renewal-info-empty">لا توجد بيانات للعرض</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js" defer></script>
+</body>
+</html>

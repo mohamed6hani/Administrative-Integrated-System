@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrative Integrated System</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="/activity-core.js" defer></script>
+  <script src="/reference-runtime.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+  <header class="storage-header" role="banner">
+    <div class="brand">
+      
+      <div class="brand-text">
+        <h1>التخزين الموحد</h1>
+        <span>منصة التطبيقات</span>
+      </div>
+    </div>
+    <form class="search-box" id="filterForm" role="search">
+      <button type="submit" class="search-submit" aria-label="بحث">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+      </button>
+      <label class="sr-only" for="searchInput">بحث</label>
+      <input type="search" id="searchInput" placeholder="البحث في التخزين الموحد" autocomplete="off" />
+    </form>
+    <div class="header-actions">
+      <button type="button" class="btn ghost" id="refreshBtn">تحديث</button>
+      <button type="button" class="btn ghost" id="backBtn">العودة للرئيسية</button>
+    </div>
+  </header>
+
+  <main class="storage-shell">
+    <section class="explorer-window" aria-label="مستعرض ملفات التخزين">
+      <aside class="explorer-sidebar" aria-label="اختصارات التخزين">
+        <button type="button" class="new-btn" id="openUploadBtn">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z"/></svg>
+          <span>رفع ملف</span>
+        </button>
+        <nav class="storage-nav" id="storageNav" aria-label="مجلدات التخزين"></nav>
+
+        <section class="sidebar-tree" id="folderTreeSection" aria-label="شجرة المجلدات" hidden>
+          <h2>المجلدات</h2>
+          <nav class="folder-tree" id="folderTree"></nav>
+        </section>
+
+        <section class="sidebar-stats" aria-label="ملخص التخزين">
+          <h2>الملخص</h2>
+          <div class="stats-grid compact" id="statsGrid" aria-live="polite"></div>
+        </section>
+      </aside>
+
+      <section class="explorer-main">
+        <div class="address-row">
+          <nav class="breadcrumb-bar" id="breadcrumbBar" aria-label="المسار الحالي"></nav>
+          <label class="sector-filter" id="sectorFilterWrap" hidden>
+            <span>القطاع</span>
+            <select id="sectorFilterSelect" aria-label="تصفية مجلدات المستخدمين حسب القطاع"></select>
+          </label>
+          <div class="view-switch" aria-label="طريقة العرض">
+            <button type="button" class="view-btn active" data-view-mode="details" aria-pressed="true" title="تفاصيل">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg>
+              <span>تفاصيل</span>
+            </button>
+            <button type="button" class="view-btn" data-view-mode="tiles" aria-pressed="false" title="أيقونات">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 4h7v7H4zm9 0h7v7h-7zm-9 9h7v7H4zm9 0h7v7h-7z"/></svg>
+              <span>أيقونات</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="selection-toolbar" id="selectionToolbar" hidden></div>
+
+        <section class="files-panel">
+          <div class="folder-layout">
+            <div class="file-list-region">
+              <div class="file-list-header">
+                <button type="button" data-sort-key="name">الاسم</button>
+                <button type="button" data-sort-key="uploader">الرافع</button>
+                <button type="button" data-sort-key="size">الحجم</button>
+                <span>القطاعات</span>
+                <button type="button" data-sort-key="date">تاريخ الرفع</button>
+              </div>
+              <div class="folder-view" id="filesBody" data-view="details" role="listbox" aria-multiselectable="true" aria-label="ملفات التخزين"></div>
+            </div>
+            <aside class="details-pane" id="detailsPane" aria-live="polite" aria-label="تفاصيل الملف">
+              <div class="details-empty">حدد ملفاً لعرض التفاصيل.</div>
+            </aside>
+          </div>
+          <div class="folder-bar">
+            <div class="table-status" id="tableStatus" role="status" aria-live="polite">جاري تحميل الملفات...</div>
+            <div class="selection-status" id="selectionStatus">لم يتم تحديد عناصر</div>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <div class="modal" id="uploadModal" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle">
+      <div class="modal-header">
+        <h2 id="uploadModalTitle">رفع ملف</h2>
+        <button type="button" class="icon-btn" data-close-modal aria-label="إغلاق">×</button>
+      </div>
+      <form id="uploadForm" class="modal-body">
+        <div class="field full">
+          <div class="upload-dropzone" id="uploadDropzone">
+            <svg class="dropzone-glyph" viewBox="0 0 24 24" width="44" height="44" aria-hidden="true"><path fill="currentColor" d="M19.35 10.04A7.49 7.49 0 0 0 4.35 8.36 6 6 0 0 0 6 20h13a5 5 0 0 0 .35-9.96zM14 13v4h-4v-4H7l5-5 5 5z"/></svg>
+            <p>اسحب الملفات هنا أو اضغط للاختيار من جهازك</p>
+            <button type="button" class="btn secondary" id="pickUploadFileBtn">اختيار من الجهاز</button>
+            <input type="file" name="files" multiple class="dropzone-input" aria-label="اختيار ملفات للرفع" />
+            <span class="dropzone-summary" id="uploadSelectionSummary">لم يتم اختيار ملف</span>
+          </div>
+        </div>
+        <div class="field full upload-file-list" id="uploadFileList" hidden></div>
+        <label class="field" data-single-upload-title>
+          <span>العنوان</span>
+          <input type="text" name="title" placeholder="اسم مختصر" />
+        </label>
+        <label class="field full">
+          <span>ملاحظات</span>
+          <textarea name="description" rows="3"></textarea>
+        </label>
+        <div class="field full availability-field" data-availability-field hidden>
+          <div class="availability-field-head">
+            <span>قطاعات الإتاحة</span>
+            <button type="button" class="btn secondary availability-select-all" data-select-all-availability-sectors>اختيار كل القطاعات</button>
+          </div>
+          <input type="hidden" name="availabilitySectors" data-availability-sectors disabled />
+          <div class="availability-sector-list" data-availability-sector-list></div>
+        </div>
+        <div class="field full upload-progress" id="uploadProgress" hidden>
+          <div class="upload-progress-track"><div class="upload-progress-fill" id="uploadProgressFill"></div></div>
+          <span class="upload-progress-text" id="uploadProgressText">٠٪</span>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn ghost" data-close-modal>إلغاء</button>
+          <button type="submit" class="btn primary">رفع</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="editModal" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+      <div class="modal-header">
+        <h2 id="editModalTitle">تعديل ملف</h2>
+        <button type="button" class="icon-btn" data-close-modal aria-label="إغلاق">×</button>
+      </div>
+      <form id="editForm" class="modal-body">
+        <input type="hidden" name="id" />
+        <label class="field">
+          <span>العنوان</span>
+          <input type="text" name="title" required />
+        </label>
+        <label class="field full">
+          <span>ملاحظات</span>
+          <textarea name="description" rows="3"></textarea>
+        </label>
+        <div class="field full availability-field" data-availability-field hidden>
+          <div class="availability-field-head">
+            <span>قطاعات الإتاحة</span>
+            <button type="button" class="btn secondary availability-select-all" data-select-all-availability-sectors>اختيار كل القطاعات</button>
+          </div>
+          <input type="hidden" name="availabilitySectors" data-availability-sectors disabled />
+          <div class="availability-sector-list" data-availability-sector-list></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn ghost" data-close-modal>إلغاء</button>
+          <button type="submit" class="btn primary">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="context-menu" id="fileContextMenu" role="menu" hidden></div>
+  <div class="toast" id="toast" hidden></div>
+</body>
+</html>

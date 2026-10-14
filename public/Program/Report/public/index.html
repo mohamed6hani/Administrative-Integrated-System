@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Administrative Integrated System</title>
+  
+  <link rel="stylesheet" href="./style.css"/>
+  <!-- Column sizes: edit the numbers below to adjust widths -->
+  <style id="column-sizes">
+    :root{
+      --col-select-w: 50px;
+      --col-id-w: 70px;
+      --col-date-w: 120px;
+      --col-text-index-w: 46px;
+      --col-name-min: 160px;
+      --col-job-min: 140px;
+      --col-license-min: 120px;
+      --col-weapon-min: 140px;
+      --col-purpose-min: 90px;
+      --col-sector-min: 120px;
+      --col-police-min: 120px;
+      --col-decision-min: 110px;
+      --col-recommendation-min: 110px;
+      --col-photo-min: 70px;
+    }
+    /* Column width helpers (edit only the numbers above) */
+    thead th.col-select{ width: var(--col-select-w); }
+    thead th.col-id{ width: var(--col-id-w); }
+    thead th.col-date{ width: var(--col-date-w); }
+  thead th.col-text-index{ width: var(--col-text-index-w); }
+  thead th.col-name{ width: var(--col-name-min); }
+  thead th.col-job{ width: var(--col-job-min); }
+  thead th.col-license{ width: var(--col-license-min); }
+  thead th.col-weapon{ width: var(--col-weapon-min); }
+  thead th.col-purpose{ width: var(--col-purpose-min); }
+  thead th.col-sector{ width: var(--col-sector-min); }
+  thead th.col-police{ width: var(--col-police-min); }
+  thead th.col-decision{ width: var(--col-decision-min); }
+  thead th.col-recommendation{ width: var(--col-recommendation-min); }
+  thead th.col-photo{ width: var(--col-photo-min); }
+  
+  /* Hide sector and recommendation columns when printing */
+  @media print {
+    .col-sector, .col-recommendation, .no-print {
+      display: none !important;
+    }
+  }
+  thead th.col-weapon{ width: var(--col-weapon-min); }
+  thead th.col-purpose{ width: var(--col-purpose-min); }
+  thead th.col-police{ width: var(--col-police-min); }
+  thead th.col-decision{ width: var(--col-decision-min); }
+  thead th.col-photo{ width: var(--col-photo-min); }
+  </style>
+  <script src="/activity-core.js" defer></script>
+  <script src="/reference-runtime.js" defer></script>
+  <script src="/activity-overlays.js" defer></script>
+  <script src="/delete-approval-user-notice.js" defer></script>
+  
+</head>
+<body>
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+<header class="app-header">
+  <div class="app-header-title">
+    <button id="reportSettingsToggle" title="الإعدادات" class="settings-toggle" type="button">⚙️</button>
+    <h1>سجل القرارات</h1>
+  </div>
+  <div class="controls">
+    <button id="addRowBtn">➕ إضافة سجل</button>
+    <button id="saveBtn">💾 حفظ</button>
+    <button id="deleteSelectedBtn" disabled>🗑️ حذف المحدد</button>
+    <!-- <button id="tagAttachmentsBtn" disabled>🏷️ وسم المرفقات (_26)</button> -->
+    <button id="ocrScanOpenBtn" class="ocr-feature" type="button">🔍 فحص المرفقات</button>
+    <div class="dataset-slider" id="datasetSlider" role="group" aria-label="مصدر البيانات">
+      <button type="button" data-dataset="civilians">مدنيين</button>
+      <button type="button" data-dataset="police">شرطة</button>
+      <button type="button" data-dataset="military">قوات المسلحة</button>
+      <button type="button" data-dataset="all">الكل</button>
+    </div>
+    <button id="logoutBtn" class="danger">🚪 خروج</button>
+    <span id="saveStatus" aria-live="polite"></span>
+  </div>
+</header>
+
+<main>
+  <div class="card filter-card" id="filterCard">
+    <div class="filter-row">
+      <div class="filter-zone filter-zone--search">
+        <label class="filter-field filter-field--decision-number">
+          <span>رقم القرار</span>
+          <!-- use text + inputmode to allow Arabic numerals; JS will normalize to English for comparisons -->
+          <input id="filterId" type="text" inputmode="numeric" pattern="[0-9٠-٩]*" placeholder="رقم القرار" />
+        </label>
+        <label class="filter-field filter-field--search">
+          <span>البحث</span>
+          <div class="search-column-control">
+            <input id="filterName" type="text" placeholder="ابحث في كل الأعمدة" />
+            <select id="filterSearchColumn" aria-label="تحديد عمود البحث">
+              <option value="__all__">كل الأعمدة</option>
+            </select>
+          </div>
+        </label>
+      </div>
+      <label class="filter-field filter-field--sector">
+        <span>القطاع</span>
+        <div class="sector-stripes-wrapper report-sector-stripes-wrapper" role="group" aria-label="اختيار القطاع">
+          <div class="sector-stripes" id="reportSectorStripes"></div>
+        </div>
+        <select id="filterSector" class="sector-select-hidden" aria-label="القطاع">
+          <option value="">الكل</option>
+          <option value="east">شرق</option>
+          <option value="west">غرب</option>
+          <option value="south">جنوب</option>
+          <option value="north">شمال</option>
+          <option value="sectorfive">القطاع التجريبي الخامس</option>
+        </select>
+      </label>
+      <label class="filter-field filter-field--station">
+        <span>قسم الشرطة</span>
+        <div id="reportStationButtonsContainer" class="station-buttons-container"></div>
+        <select id="filterStation" class="station-select-hidden" disabled aria-label="قسم الشرطة">
+          <option value="">الكل</option>
+        </select>
+      </label>
+      <div class="filter-zone filter-zone--dropdowns">
+        <label class="filter-field filter-field--decision">
+          <span>حالة القرار</span>
+          <select id="filterDecision">
+            <option value="all">الكل</option>
+            <option value="accepted">الموافقة</option>
+            <option value="cancelled">الموافقة علي الالغاء</option>
+            <option value="rejected">عدم الموافقة</option>
+          </select>
+        </label>
+        <label class="filter-field filter-field--years">
+          <span>السنوات</span>
+          <div class="dropdown" id="yearDropdown">
+            <button type="button" class="dropdown-toggle" id="yearToggle">الكل ▾</button>
+            <div class="dropdown-menu" id="yearMenu" hidden>
+              <label class="choice"><input type="checkbox" id="filterYearAll" checked> الكل</label>
+              <!-- years injected by app.js -->
+            </div>
+          </div>
+        </label>
+        <label class="filter-field filter-field--reorder">
+          <span class="switch">
+            <input type="checkbox" id="toggleReorder" checked />
+            <span class="slider" aria-hidden="true"></span>
+          </span>
+          <span>تغير القرار</span>
+        </label>
+      </div>
+    </div>
+      <!-- TODO: add more filters in future (مثال: التاريخ، الوظيفة، نوع الترخيص، قسم الشرطة) -->
+  </div>
+  <div class="card ocr-search-card no-print ocr-feature" id="ocrSearchCard">
+    <button class="ocr-search-toggle" id="ocrSearchToggle" type="button">🔍 بحث داخل المرفقات (OCR) ▸</button>
+    <div id="ocrSearchContent" hidden>
+      <div class="ocr-search-row">
+        <input id="ocrSearchQuery" type="text" placeholder="ابحث في نص المرفقات..." autocomplete="off" />
+        <input id="ocrSearchDecision" type="text" inputmode="numeric" placeholder="رقم القرار (اختياري)" style="width:130px" />
+        <select id="ocrSearchCategory">
+          <option value="">كل الفئات</option>
+          <option value="civilians">مدنيين</option>
+          <option value="police">شرطة</option>
+          <option value="military">قوات المسلحة</option>
+        </select>
+        <button id="ocrSearchBtn" type="button">بحث ▶</button>
+      </div>
+      <div id="ocrSearchResults" class="ocr-search-results" dir="rtl"></div>
+    </div>
+  </div>
+
+  <aside id="reportSettingsSidebar" class="report-settings-sidebar" aria-hidden="true">
+    <div class="report-settings-header">
+      <strong>الإعدادات</strong>
+      <button id="reportSettingsClose" type="button" aria-label="إغلاق">✖</button>
+    </div>
+    <div class="report-settings-body">
+      <label class="report-toggle-row">
+        <span>
+          <b>OCR</b>
+          <small>إظهار أو إخفاء فحص وبحث المرفقات</small>
+        </span>
+        <input id="reportOcrToggle" type="checkbox" />
+      </label>
+      <div id="reportSettingsStatus" class="report-settings-status"></div>
+    </div>
+  </aside>
+
+  <div class="table-wrap">
+    <div class="pager no-print" id="pager">
+      <span class="visible-decision-count" id="visibleDecisionCount" aria-live="polite">عدد القرارات مكتب تجريبي 13ة: ٠</span>
+      <button id="firstPage" type="button">الأول</button>
+      <button id="prevPage" type="button">السابق</button>
+      <span id="pageInfo" aria-live="polite">١ / ١</span>
+      <button id="nextPage" type="button">التالي</button>
+      <button id="lastPage" type="button">الأخير</button>
+    </div>
+    <table id="grid" class="grid">
+      <thead>
+        <tr>
+          <th class="col-drag">&nbsp;</th>
+          <th class="col-select">
+            <input type="checkbox" id="selectAll" title="تحديد الكل">
+          </th>
+          <th class="col-id">رقم القرار</th>
+          <th class="col-date">تاريخ القرار</th>
+          <th class="col-text-index no-print">+</th>
+          <th class="col-name">الاسم</th>
+          <th class="col-job">الوظيفة</th>
+          <th class="col-license">نوع الترخيص</th>
+          <th class="col-weapon">نوع السلاح</th>
+          <th class="col-purpose">الغرض</th>
+          <th class="col-sector no-print">القطاع</th>
+          <th class="col-police">قسم الشرطة</th>
+          <th class="col-decision-manager">مدير الامن</th>
+          <th class="col-decision-public">امن العام</th>
+          <th class="col-recommendation no-print">توصية</th>
+          <th class="col-photo">صورة</th>
+        </tr>
+      </thead>
+      <tbody id="gridBody">
+        <!-- rows injected here -->
+      </tbody>
+        <tfoot id="addFoot">
+        <!-- add form rendered here -->
+      </tfoot>
+    </table>
+  </div>
+</main>
+
+<script src="./app.js" defer></script>
+
+<div id="ocrScanModal" class="ocr-modal-overlay no-print ocr-feature" hidden role="dialog" aria-modal="true" aria-labelledby="ocrModalTitle">
+  <div class="ocr-modal">
+    <header class="ocr-modal-header">
+      <h3 id="ocrModalTitle">فحص المرفقات</h3>
+      <button type="button" id="ocrModalClose" class="ocr-btn-close" title="إغلاق">✖</button>
+    </header>
+    <div class="ocr-modal-body">
+      <div class="ocr-status-row">
+        <span id="ocrStatusText">اضغط "بدء الفحص" لبدء استخراج النص من المرفقات</span>
+      </div>
+      <div class="ocr-progress-wrap" id="ocrProgressWrap" hidden>
+        <div class="ocr-progress-bar-bg">
+          <div id="ocrProgressBar" class="ocr-progress-bar" style="width:0%"></div>
+        </div>
+        <span id="ocrProgressPct" class="ocr-pct-label">0%</span>
+      </div>
+      <div class="ocr-time-row" id="ocrTimeRow" hidden>
+        <span class="ocr-time-chip">⏱ <span id="ocrElapsed">—</span></span>
+        <span class="ocr-time-chip ocr-eta-chip">⌛ متبقي <span id="ocrEta">—</span></span>
+        <span class="ocr-time-chip ocr-saved-chip">💾 <span id="ocrSavedPages">—</span> صفحة محفوظة</span>
+      </div>
+      <div class="ocr-stats-grid" id="ocrStatsGrid">
+        <div class="ocr-stat"><span class="ocr-stat-lbl">إجمالي</span><b id="ocrTotal">—</b></div>
+        <div class="ocr-stat ocr-stat-new"><span class="ocr-stat-lbl">جديدة</span><b id="ocrScanned">—</b></div>
+        <div class="ocr-stat ocr-stat-cache"><span class="ocr-stat-lbl">مخزنة</span><b id="ocrSkipped">—</b></div>
+        <div class="ocr-stat ocr-stat-upd"><span class="ocr-stat-lbl">محدثة</span><b id="ocrUpdated">—</b></div>
+        <div class="ocr-stat ocr-stat-fail"><span class="ocr-stat-lbl">أخطاء</span><b id="ocrFailed">—</b></div>
+      </div>
+      <div class="ocr-current" id="ocrCurrentInfo" hidden>
+        <div>القرار: <span id="ocrCurrentDecision">—</span></div>
+        <div class="ocr-current-file">الملف: <span id="ocrCurrentFile">—</span></div>
+      </div>
+      <div class="ocr-log-wrap">
+        <div class="ocr-log-hdr">سجل الأحداث</div>
+        <div id="ocrLog" class="ocr-log" dir="ltr"></div>
+      </div>
+    </div>
+    <footer class="ocr-modal-footer">
+      <button type="button" id="ocrStartBtn" class="ocr-btn-start">▶ بدء الفحص</button>
+    </footer>
+  </div>
+</div>
+
+<div id="ocrResultsModal" class="ocr-modal-overlay no-print ocr-feature" hidden role="dialog" aria-modal="true">
+  <div class="ocr-modal ocr-results-modal">
+    <header class="ocr-modal-header">
+      <h3 id="ocrResultsTitle">نتائج OCR</h3>
+      <button type="button" id="ocrResultsClose" class="ocr-btn-close" title="إغلاق">✖</button>
+    </header>
+    <div class="ocr-modal-body" id="ocrResultsBody" dir="rtl">
+      <div class="ocr-loading" id="ocrResultsLoading">جاري التحميل...</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

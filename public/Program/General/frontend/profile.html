@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrative Integrated System</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="/activity-core.js" defer></script>
+  <script src="/reference-runtime.js" defer></script>
+</head>
+<body class="office-theme light-mode profile-page">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+  <div class="ambient-light ambient-light-top"></div>
+  <div class="ambient-light ambient-light-bottom"></div>
+  <div class="floating-shape shape-1"></div>
+  <div class="floating-shape shape-2"></div>
+  <div class="floating-shape shape-3"></div>
+
+  <header class="office-header compact">
+    <div class="brand-group">
+      <h1 class="brand-title" dir="ltr">Administrative Integrated System</h1>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn ghost" onclick="window.location.href='main.html'">← العودة للوحة الرئيسية</button>
+      <button type="button" class="btn danger" onclick="logoutApp(event)">تسجيل الخروج</button>
+    </div>
+  </header>
+
+  <main class="office-main profile-layout">
+    <section class="glass-card profile-card">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">الملف الشخصي</span>
+          <h2>بيانات الحساب</h2>
+        </div>
+      </header>
+      <div class="card-body">
+        <div class="summary-block">
+          <span class="summary-label">اسم المستخدم</span>
+          <span class="summary-value" id="profileUsername">—</span>
+        </div>
+        <div class="summary-block">
+          <span class="summary-label">الاسم مكتب تجريبي 13</span>
+          <span class="summary-value" id="profileDisplayName">—</span>
+        </div>
+        <div class="summary-block">
+          <span class="summary-label">الدور</span>
+          <span class="summary-badge" id="profileRoleBadge">فرد</span>
+        </div>
+        <div class="summary-block">
+          <span class="summary-label">القطاع</span>
+          <span class="summary-value" id="profileSector">—</span>
+        </div>
+        <div class="summary-block">
+          <span class="summary-label">تاريخ الإنشاء</span>
+          <span class="summary-value" id="profileCreatedAt">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card profile-card">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">الوصول المصرح</span>
+          <h2>التطبيقات المتاحة</h2>
+        </div>
+        <p>تعرض القائمة التالية البرامج التي يمكنك استخدامها ضمن المنصة.</p>
+      </header>
+      <ul id="profileAllowedApps" class="app-pills"></ul>
+      <div class="future-control muted hidden" id="profileAdminNote">
+        <h3>صلاحيات المدير</h3>
+  <p>بصفتك مديرًا يمكنك إدارة الأفراد من صفحة الإعدادات، وإضافة تطبيقات جديدة لاحقًا من نفس المكان.</p>
+        <div class="form-actions">
+          <button type="button" class="btn ghost" onclick="goToSettings()">الانتقال إلى الإعدادات</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-card profile-card">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">أمان الحساب</span>
+          <h2>تغيير كلمة المرور</h2>
+        </div>
+        <p>قم بتحديث كلمة المرور الخاصة بك بانتظام للحفاظ على حماية الحساب.</p>
+      </header>
+      <form id="profilePasswordForm" class="form-grid" novalidate>
+        <label class="field">
+          <span class="field-label">كلمة المرور الحالية</span>
+          <div class="field-control">
+            <input type="password" name="currentPassword" placeholder="••••••••" autocomplete="current-password" required />
+          </div>
+        </label>
+        <label class="field">
+          <span class="field-label">كلمة المرور الجديدة</span>
+          <div class="field-control">
+            <input type="password" name="newPassword" placeholder="كلمة مرور قوية" autocomplete="new-password" required />
+          </div>
+          <small class="field-hint">يجب أن تتكون من 6 رموز على الأقل.</small>
+        </label>
+        <label class="field">
+          <span class="field-label">تأكيد كلمة المرور الجديدة</span>
+          <div class="field-control">
+            <input type="password" name="confirmPassword" placeholder="أعد إدخال كلمة المرور" autocomplete="new-password" required />
+          </div>
+        </label>
+        <div id="profilePasswordMessage" class="status-message" aria-live="polite"></div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">تحديث كلمة المرور</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="glass-card profile-card">
+      <header class="card-header">
+        <div>
+          <span class="card-kicker">إجراءات سريعة</span>
+          <h2>المهام المتكررة</h2>
+        </div>
+      </header>
+      <div class="card-body quick-actions">
+  <button type="button" class="btn primary" onclick="window.location.href='main.html'">فتح اللوحة الرئيسية</button>
+  <button type="button" class="btn ghost" data-admin-only onclick="goToSettings()">فتح الإعدادات</button>
+        <button type="button" class="btn danger" onclick="logoutApp(event)">تسجيل الخروج</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

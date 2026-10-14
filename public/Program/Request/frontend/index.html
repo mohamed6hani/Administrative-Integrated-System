@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrative Integrated System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/activity-core.js" defer></script>
+    <script src="/reference-runtime.js" defer></script>
+    <script src="/activity-overlays.js" defer></script>
+    <script src="/delete-approval-user-notice.js" defer></script>
+    
+</head>
+<body data-page="index">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+    <header>
+        <button type="button" class="back-button" data-target="/main.html">خروج</button>
+        <div class="container">
+            <h2>بيان بالطلبات المقدمة لترخيص سلاح باقسام الشرطة</h2>
+            <!-- <p>Weapon Request System</p> -->
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="flash-message" id="flashMessage" role="status" aria-live="polite"></div>
+        <div class="card sector-station-card" role="search">
+            <div class="sector-station-row">
+                <div class="sector-stripes-wrapper" role="group" aria-label="القطاع">
+                    <div class="sector-stripes" id="sectorStripes"></div>
+                </div>
+                <select id="filterSector" name="filterSector" class="sector-select-hidden" tabindex="-1" aria-hidden="true">
+                    <option value="">كل القطاعات</option>
+                </select>
+            </div>
+            <div class="sector-station-row">
+                <div id="stationButtonsContainer" class="station-buttons-container" role="group" aria-label="القسم">
+                    <span class="station-buttons-empty">اختر قطاعًا أولاً</span>
+                </div>
+                <select id="filterStation" name="filterStation" class="sector-select-hidden" tabindex="-1" aria-hidden="true" disabled>
+                    <option value="">كل الأقسام</option>
+                </select>
+            </div>
+        </div>
+        <div class="card filters-card" role="search">
+            <div class="filters-toolbar">
+                <h2 class="filters-title">تصفية النتائج</h2>
+                <form class="filters-form" autocomplete="off">
+                    <div class="filters-field search-field">
+                        <label for="searchName">البحث بالاسم</label>
+                        <input type="text" id="searchName" name="searchName" placeholder="أدخل الاسم للبحث" autocomplete="off">
+                    </div>
+                    <div class="filters-field select-field">
+                        <label for="filterYear">السنة</label>
+                        <select id="filterYear" name="filterYear">
+                            <option value="">كل السنوات</option>
+                        </select>
+                    </div>
+                    <div class="filters-field select-field">
+                        <label for="filterMonth">الشهر</label>
+                        <select id="filterMonth" name="filterMonth">
+                            <option value="">كل الشهور</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card records-card">
+            <div class="records-header">
+                <h2>السجلات</h2>
+                <div class="records-actions">
+                    <span class="records-meta">عدد الطلبات: <strong id="recordCount">0</strong></span>
+                    <span class="records-meta">اجمالي عدد الطلبات: <strong id="totalRecordCount">0</strong></span>
+                    <button type="button" class="records-secondary-btn" id="browserPrintBtn" disabled>طباعة 🖨️</button>
+                    <button type="button" class="records-secondary-btn" id="deleteRecordBtn" disabled>حذف السجل</button>
+                    <button type="button" class="records-secondary-btn" id="showDeletedBtn">استرجاع</button>
+                    <a class="add-record-btn" href="create.html">إدراج سجل جديد</a>
+                </div>
+            </div>
+            <div class="request-records-frame" id="requestRecordsFrame">
+                <div class="request-pagination" aria-label="التنقل بين صفحات السجلات">
+                    <button type="button" class="request-pagination-btn" id="requestPagePrevious">السابق</button>
+                    <span class="request-page-indicator" id="requestPageIndicator" aria-live="polite" dir="ltr">١ / ١</span>
+                    <button type="button" class="request-pagination-btn" id="requestPageNext">التالي</button>
+                </div>
+                <div class="request-records-viewport" id="requestRecordsViewport">
+                    <div class="records-columns" aria-hidden="true">
+                        <span class="column-label">مسلسل</span>
+                        <span class="column-label">اسم الطالب</span>
+                        <span class="column-label">تاريخ التقديم</span>
+                        <span class="column-label">القطاع</span>
+                        <span class="column-label">القسم</span>
+                        <span class="column-label">السلاح المطلوب</span>
+                        <span class="column-label">إجراءات</span>
+                    </div>
+                    <div class="records-list" id="recordsList">
+                        <div class="empty-placeholder">
+                            <p>لم يتم إضافة سجلات بعد.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="deleted-overlay hidden" id="deletedPanel" aria-hidden="true">
+            <div class="deleted-dialog" role="dialog" aria-modal="true" aria-label="السجلات المحذوفة" aria-live="polite">
+                <div class="deleted-panel-header">
+                    <h3>السجلات المحذوفة</h3>
+                    <button type="button" class="panel-close-btn" id="closeDeletedPanel">إغلاق</button>
+                </div>
+                <div class="deleted-list" id="deletedList">
+                    <p class="deleted-empty">لا توجد سجلات محذوفة حالياً.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="record-pagination.js" defer></script>
+    <script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Administrative Integrated System</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="/activity-core.js" defer></script>
+  <script src="/activity-overlays.js" defer></script>
+  <script src="/delete-approval-user-notice.js" defer></script>
+  
+</head>
+<body class="accept-theme light-mode" data-page="accept-index">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <header class="page-header">
+    <button type="button" class="back-button" data-target="/main.html" aria-label="العودة إلى اللوحة الرئيسية">خروج</button>
+    <div class="title-block">
+      <div class="suite-mark">ACC</div>
+      <div>
+        <p class="title-kicker">Office Workspace</p>
+        <h1>
+          <span class="title-main">موافقة شئون الضباط</span>
+        </h1>
+      </div>
+    </div>
+    <div class="user-chip" role="group" aria-label="معلومات المستخدم">
+      <span class="office-date" id="officeDateDisplay">—</span>
+      <span class="user-name" id="userDisplayName">—</span>
+      <span class="user-role" id="userRole">—</span>
+    </div>
+  </header>
+
+  <main class="layout">
+      <section class="card results-card" aria-labelledby="resultsTitle">
+          <div class="card-header">
+            <div class="header-main">
+              <p class="card-kicker">Workspace Grid</p>
+              <h2 id="resultsTitle">سجل الترشيحات</h2>
+              <p class="card-subtitle">تعديل مباشر، أوامر تشغيل واضحة، ومتابعة حية للحالة بدون مغادرة الصفحة.</p>
+            </div>
+
+            <div class="header-actions">
+              <div class="command-group">
+                <span class="command-group__label">السجل</span>
+                <div class="command-group__actions">
+                  <button type="button" id="addRowBtn" class="btn btn-accent">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/></svg>
+                    جديد
+                  </button>
+                  <button type="button" id="saveAllBtn" class="btn" disabled>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2zm12 1v1h-3V1h3zm-5 1V1H6v2h3zM2 2v12h12V4h-1v8H3V4H2v-2z"/></svg>
+                    حفظ التغييرات
+                  </button>
+                  <button type="button" id="deleteBtn" class="btn" disabled>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                    حذف
+                  </button>
+                </div>
+              </div>
+
+              <div class="command-group">
+                <span class="command-group__label">الاسترجاع والإخراج</span>
+                <div class="command-group__actions">
+                  <button type="button" id="importBtn" class="btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8.5 1a.5.5 0 0 0-1 0v6.793L5.354 5.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 7.793V1z"/><path d="M2 10.5a.5.5 0 0 0-1 0V13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.5a.5.5 0 0 0-1 0V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-2.5z"/></svg>
+                    استيراد
+                  </button>
+                  <input type="file" id="importFileInput" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+                  <button type="button" id="restoreBtn" class="btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/></svg>
+                    الأرشيف
+                  </button>
+                  <button type="button" id="printBtn" class="btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                    طباعة
+                  </button>
+                </div>
+              </div>
+
+              <div class="save-status-wrap">
+                <span id="saveStatus" class="save-status" role="status" aria-live="polite"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sheet-filter-bar" aria-label="مرشحات البحث">
+            <span class="sheet-filter-bar__label">المرشحات</span>
+            <form class="filters compact" autocomplete="off">
+              <div class="filters-row">
+                <div class="filter-field filter-field--wide">
+                  <label class="filter-label" for="nameSearch">الاسم</label>
+                  <div class="search-input">
+                    <input type="search" id="nameSearch" name="name" placeholder="ابحث بالاسم" aria-label="البحث بالاسم" />
+                    <span class="search-icon">⌕</span>
+                  </div>
+                </div>
+
+                <div class="filter-field">
+                  <label class="filter-label" for="rankMulti">الرتبة</label>
+                  <div class="multi-select" id="rankMulti" data-filter="rank">
+                    <button type="button" class="multi-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                      <span class="multi-select__label">كل الرتب</span>
+                      <span class="multi-select__chevron" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="multi-select__panel" role="listbox" tabindex="-1" hidden>
+                      <div class="multi-select__options"></div>
+                      <div class="multi-select__footer">
+                        <button type="button" class="multi-select__clear" data-action="clear">مسح الكل</button>
+                        <button type="button" class="multi-select__close" data-action="close">إغلاق</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="filter-field">
+                  <label class="filter-label" for="specializationMulti">التخصص</label>
+                  <div class="multi-select" id="specializationMulti" data-filter="specialization">
+                    <button type="button" class="multi-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                      <span class="multi-select__label">كل التخصصات</span>
+                      <span class="multi-select__chevron" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="multi-select__panel" role="listbox" tabindex="-1" hidden>
+                      <div class="multi-select__options"></div>
+                      <div class="multi-select__footer">
+                        <button type="button" class="multi-select__clear" data-action="clear">مسح الكل</button>
+                        <button type="button" class="multi-select__close" data-action="close">إغلاق</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="filter-field">
+                  <label class="filter-label" for="residenceMulti">محل الإقامة</label>
+                  <div class="multi-select" id="residenceMulti" data-filter="residence">
+                    <button type="button" class="multi-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                      <span class="multi-select__label">كل أماكن الإقامة</span>
+                      <span class="multi-select__chevron" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="multi-select__panel" role="listbox" tabindex="-1" hidden>
+                      <div class="multi-select__options"></div>
+                      <div class="multi-select__footer">
+                        <button type="button" class="multi-select__clear" data-action="clear">مسح الكل</button>
+                        <button type="button" class="multi-select__close" data-action="close">إغلاق</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="filter-field">
+                  <label class="filter-label" for="yearMulti">سنة الوارد</label>
+                  <div class="multi-select" id="yearMulti" data-filter="year">
+                    <button type="button" class="multi-select__trigger" aria-haspopup="listbox" aria-expanded="false">
+                      <span class="multi-select__label">كل السنوات</span>
+                      <span class="multi-select__chevron" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="multi-select__panel" role="listbox" tabindex="-1" hidden>
+                      <div class="multi-select__options"></div>
+                      <div class="multi-select__footer">
+                        <button type="button" class="multi-select__clear" data-action="clear">مسح الكل</button>
+                        <button type="button" class="multi-select__close" data-action="close">إغلاق</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="table-toolbar" aria-label="ملخص الجدول">
+            <span class="table-toolbar__pill" id="activeSortDisplay">الفرز: تاريخ الوارد - تنازلي</span>
+            <span class="table-toolbar__pill" id="filterSummaryDisplay">بدون مرشحات نشطة</span>
+            <span class="table-toolbar__pill" id="selectionSummaryDisplay">لا توجد سجلات محددة</span>
+          </div>
+
+          <div class="pagination-bar" id="paginationBar" hidden>
+            <button type="button" class="pg-btn" id="pgFirst">الأول</button>
+            <button type="button" class="pg-btn" id="pgPrev">السابق</button>
+            <span class="pg-info" id="pgInfo">١ / ١</span>
+            <button type="button" class="pg-btn" id="pgNext">التالي</button>
+            <button type="button" class="pg-btn" id="pgLast">الأخير</button>
+          </div>
+
+          <div class="table-wrapper" role="region" aria-live="polite" aria-describedby="tableCaption">
+            <table class="results-table">
+              <caption id="tableCaption" class="fancy-caption">قائمة الترشيحات الحالية بناءً على المرشحات المحددة</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="col-rownum">#</th>
+                  <th scope="col" class="col-select">اختيار</th>
+                  <th scope="col" class="sortable" data-sort-key="rank">
+                    <button type="button" class="sort-toggle" data-sort-key="rank">
+                      <span class="sort-label">الرتبة / التخصص</span>
+                      <span class="sort-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="sort-menu" role="menu" aria-hidden="true" hidden>
+                      <button type="button" class="sort-option" data-direction="desc">من اعلي الي اسفل</button>
+                      <button type="button" class="sort-option" data-direction="asc">من اسفل الي اعلي</button>
+                    </div>
+                  </th>
+                  <th scope="col" class="sortable" data-sort-key="name">
+                    <button type="button" class="sort-toggle" data-sort-key="name">
+                      <span class="sort-label">الاسم</span>
+                      <span class="sort-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="sort-menu" role="menu" aria-hidden="true" hidden>
+                      <button type="button" class="sort-option" data-direction="desc">من اعلي الي اسفل</button>
+                      <button type="button" class="sort-option" data-direction="asc">من اسفل الي اعلي</button>
+                    </div>
+                  </th>
+                  <th scope="col" class="sortable" data-sort-key="workplace">
+                    <button type="button" class="sort-toggle" data-sort-key="workplace">
+                      <span class="sort-label">جهة العمل</span>
+                      <span class="sort-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="sort-menu" role="menu" aria-hidden="true" hidden>
+                      <button type="button" class="sort-option" data-direction="desc">من اعلي الي اسفل</button>
+                      <button type="button" class="sort-option" data-direction="asc">من اسفل الي اعلي</button>
+                    </div>
+                  </th>
+                  <th scope="col" class="sortable" data-sort-key="incomingDate">
+                    <button type="button" class="sort-toggle" data-sort-key="incomingDate">
+                      <span class="sort-label">تاريخ الوارد</span>
+                      <span class="sort-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="sort-menu" role="menu" aria-hidden="true" hidden>
+                      <button type="button" class="sort-option" data-direction="desc">من اعلي الي اسفل</button>
+                      <button type="button" class="sort-option" data-direction="asc">من اسفل الي اعلي</button>
+                    </div>
+                  </th>
+                  <th scope="col" class="sortable" data-sort-key="residence">
+                    <button type="button" class="sort-toggle" data-sort-key="residence">
+                      <span class="sort-label">محل الإقامة</span>
+                      <span class="sort-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="sort-menu" role="menu" aria-hidden="true" hidden>
+                      <button type="button" class="sort-option" data-direction="desc">من اعلي الي اسفل</button>
+                      <button type="button" class="sort-option" data-direction="asc">من اسفل الي اعلي</button>
+                    </div>
+                  </th>
+                  <th scope="col" class="sortable" data-sort-key="licenseType">
+                    <button type="button" class="sort-toggle" data-sort-key="licenseType">
+                      <span class="sort-label">نوع الموافقة شئون الضباط</span>
+                      <span class="sort-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="sort-menu" role="menu" aria-hidden="true" hidden>
+                      <button type="button" class="sort-option" data-direction="desc">من اعلي الي اسفل</button>
+                      <button type="button" class="sort-option" data-direction="asc">من اسفل الي اعلي</button>
+                    </div>
+                  </th>
+                  <th scope="col" class="sortable" data-sort-key="weaponType">
+                    <button type="button" class="sort-toggle" data-sort-key="weaponType">
+                      <span class="sort-label">نوع السلاح</span>
+                      <span class="sort-arrow" aria-hidden="true"></span>
+                    </button>
+                    <div class="sort-menu" role="menu" aria-hidden="true" hidden>
+                      <button type="button" class="sort-option" data-direction="desc">من اعلي الي اسفل</button>
+                      <button type="button" class="sort-option" data-direction="asc">من اسفل الي اعلي</button>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody"></tbody>
+            </table>
+
+            <div class="empty-state" id="emptyState" hidden>
+              <strong>لا توجد نتائج مطابقة</strong>
+              <span>جرّب تخفيف المرشحات أو إدخال اسم مختلف للوصول إلى السجلات.</span>
+            </div>
+          </div>
+
+          <div class="add-record-panel" id="addRecordPanel" aria-labelledby="addRecordTitle" aria-hidden="true" hidden>
+            <h3 id="addRecordTitle" class="add-record-panel__title">إضافة سجل جديد</h3>
+            <form id="addRecordForm" class="add-record-form" autocomplete="off">
+              <div class="add-record-grid">
+                <label class="add-record-field" for="addFormRank">
+                  <span class="add-record-label">الرتبة</span>
+                  <input type="text" id="addFormRank" list="rankList" dir="rtl" placeholder="اكتب الرتبة" required />
+                  <datalist id="rankList"></datalist>
+                </label>
+
+                <label class="add-record-field" for="addFormSpecialization">
+                  <span class="add-record-label">التخصص</span>
+                  <input type="text" id="addFormSpecialization" list="specializationList" dir="rtl" placeholder="اكتب التخصص" value="فقط" />
+                  <datalist id="specializationList"></datalist>
+                </label>
+
+                <label class="add-record-field" for="addFormName">
+                  <span class="add-record-label">الاسم</span>
+                  <input type="text" id="addFormName" dir="rtl" placeholder="اكتب الاسم بالكامل" required />
+                </label>
+
+                <label class="add-record-field" for="addFormWorkplace">
+                  <span class="add-record-label">جهة العمل</span>
+                  <input type="text" id="addFormWorkplace" dir="rtl" placeholder="مثال: الجهة التجريبية" required />
+                </label>
+
+                <label class="add-record-field" for="addFormIncomingDate">
+                  <span class="add-record-label">تاريخ الوارد</span>
+                  <input type="text" id="addFormIncomingDate" dir="rtl" placeholder="يوم/شهر/سنة" required />
+                </label>
+
+                <label class="add-record-field" for="addFormResidence">
+                  <span class="add-record-label">محل الإقامة</span>
+                  <input type="text" id="addFormResidence" list="residenceList" dir="rtl" placeholder="اختر أو اكتب محل الإقامة" required />
+                  <datalist id="residenceList"></datalist>
+                </label>
+
+                <label class="add-record-field" for="addFormLicenseType">
+                  <span class="add-record-label">نوع الموافقة شئون الضباط</span>
+                  <select id="addFormLicenseType" dir="rtl"></select>
+                </label>
+
+                <label class="add-record-field" for="addFormWeaponType">
+                  <span class="add-record-label">نوع السلاح</span>
+                  <input type="text" id="addFormWeaponType" list="weaponTypeList" dir="rtl" placeholder="اختر أو اكتب نوع السلاح" />
+                  <datalist id="weaponTypeList"></datalist>
+                </label>
+              </div>
+
+              <div class="add-record-actions">
+                <button type="submit" id="addRecordBtn" class="btn primary">إضافة</button>
+                <button type="button" id="addFormResetBtn" class="btn ghost">مسح الحقول</button>
+                <button type="button" id="addFormCancelBtn" class="btn ghost">إلغاء</button>
+              </div>
+
+              <p class="add-record-hint">يظهر السجل الجديد في الجدول فورًا، ويمكن تعديله أو حذفه مثل باقي السجلات.</p>
+            </form>
+          </div>
+      </section>
+  </main>
+
+  <div class="deleted-overlay" id="deletedOverlay" hidden>
+    <div class="deleted-panel" id="deletedPanel" role="dialog" aria-modal="true" aria-labelledby="deletedPanelTitle">
+      <div class="deleted-panel__header">
+        <h3 id="deletedPanelTitle">السجلات المحذوفة</h3>
+        <div class="deleted-panel__actions">
+          <button type="button" class="btn ghost" id="deletedSelectAllBtn">تحديد الكل</button>
+          <button type="button" class="btn primary" id="restoreSelectedBtn" disabled>استرجاع المحدد</button>
+          <button type="button" class="btn ghost" id="closeDeletedPanelBtn" aria-label="إغلاق نافذة السجلات المحذوفة">إغلاق</button>
+        </div>
+      </div>
+      <div class="deleted-panel__body">
+        <table>
+          <thead>
+            <tr>
+              <th>اختيار</th>
+              <th>الرتبة</th>
+              <th>الاسم</th>
+              <th>جهة العمل</th>
+              <th>تاريخ الوارد</th>
+              <th>محل الإقامة</th>
+              <th>نوع الموافقة شئون الضباط</th>
+              <th>نوع السلاح</th>
+              <th>وقت الحذف</th>
+            </tr>
+          </thead>
+          <tbody id="deletedRecordsBody"></tbody>
+        </table>
+        <p class="deleted-panel__empty" id="deletedEmptyState" hidden>لا توجد سجلات محذوفة حالياً.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+{
+  "name": "administrative-integrated-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "An integrated administrative workflow platform with eight modules, RTL interfaces and fictional local demo data.",
+  "main": "server.js",
+  "engines": {
+    "node": ">=24 <27"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "demo:seed": "node tools/seed-demo.cjs",
+    "build": "node tools/build-static.mjs",
+    "build:clean": "node tools/build-static.mjs --clean",
+    "build:check": "node tools/build-static.mjs --check",
+    "test": "node --test --test-concurrency=1 test/*.test.cjs",
+    "check:public": "node tools/check-public-source.cjs"
+  },
+  "keywords": [
+    "administration",
+    "workflow",
+    "express",
+    "sqlite",
+    "arabic",
+    "rtl",
+    "rbac"
+  ],
+  "dependencies": {
+    "express": "5.1.0",
+    "exceljs": "4.4.0",
+    "multer": "2.0.2",
+    "pdfjs-dist": "5.5.207",
+    "sql.js": "1.13.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.0",
+    "node-html-parser": "7.1.0"
+  }
+}

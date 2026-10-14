@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrative Integrated System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/activity-core.js" defer></script>
+    <script src="/reference-runtime.js" defer></script>
+    <script src="/activity-overlays.js" defer></script>
+    
+</head>
+<body data-page="create">
+<div class="demo-public-notice" style="padding:8px 16px;text-align:center;background:#fff3cd;color:#594300;font:14px system-ui;direction:ltr">Administrative Integrated System · Public demo · Fictional records only</div>
+    <header>
+        <button type="button" class="back-button" data-target="index.html">عودة</button>
+        <div class="container">
+            <h1>إدراج سجل جديد</h1>
+        </div>
+    </header>
+
+    <main class="container create-container">
+        <div class="card create-card">
+            <h2>بيانات السجل</h2>
+            <form class="create-form" novalidate>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="requesterName">اسم الطالب</label>
+                        <input type="text" id="requesterName" name="requesterName" required placeholder="أدخل اسم الطالب" autocomplete="off">
+                        <small class="hint">أحرف فقط</small>
+                        <div class="field-error" id="nameError" aria-live="polite"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="applicationDate">تاريخ التقديم</label>
+                        <input type="text" id="applicationDate" name="applicationDate" placeholder="dd/mm/yyyy" autocomplete="off">
+                        <small class="hint">التنسيق: dd/mm/yyyy</small>
+                        <div class="field-error" id="applicationDateError" aria-live="polite"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="job">الوظيفة</label>
+                        <input type="text" id="job" name="job" placeholder="أدخل الوظيفة" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="nationalId">الرقم القومي</label>
+                        <input type="text" id="nationalId" name="nationalId" placeholder="أدخل الرقم القومي" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">العنوان</label>
+                        <input type="text" id="address" name="address" placeholder="أدخل العنوان" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="approvalDate">تاريخ الموافقة</label>
+                        <input type="text" id="approvalDate" name="approvalDate" placeholder="dd/mm/yyyy" autocomplete="off">
+                        <small class="hint">التنسيق: dd/mm/yyyy</small>
+                        <div class="field-error" id="dateError" aria-live="polite"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="purchasePermit">رقم تصريح الشراء</label>
+                        <input type="text" id="purchasePermit" name="purchasePermit" placeholder="أدخل رقم تصريح الشراء" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="licenseNumber">رقم الرخصة المنصرفة</label>
+                        <input type="text" id="licenseNumber" name="licenseNumber" placeholder="أدخل رقم الرخصة" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="createSector">القطاع</label>
+                        <select id="createSector" name="sector">
+                            <option value="">اختر القطاع</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="createStation">القسم</label>
+                        <select id="createStation" name="station" disabled>
+                            <option value="">اختر القسم</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="licenseType">نوع الترخيص</label>
+                    <div class="license-type-group">
+                        <select id="licenseType" name="licenseType">
+                            <option value="">اختر نوع الترخيص</option>
+                        </select>
+                        <input type="text" id="licenseTypeOther" name="licenseTypeOther" class="license-type-other hidden" placeholder="حدد نوع الترخيص" autocomplete="off">
+                    </div>
+                    <div class="field-error" id="licenseTypeError" aria-live="polite"></div>
+                </div>
+                <div class="form-group full-width weapon-group">
+                    <label for="weaponData">السلاح المطلوب</label>
+                    <textarea id="weaponData" name="weaponData" rows="3" placeholder="أدخل السلاح المطلوب" autocomplete="off"></textarea>
+                </div>
+                <div class="form-group full-width directorate-group">
+                    <span class="group-label">الإدارات</span>
+                    <p class="group-hint">حدد الإدارة المطلوبة ثم أدخل أرقام وتواريخ الصادر والوارد، نتيجة الكشف، وأي ملاحظات خاصة بكل إدارة.</p>
+                    <div class="directorate-checklist" id="createDirectorateChecklist" aria-live="polite"></div>
+                    <div class="field-error" id="directorateError" aria-live="polite"></div>
+                </div>
+                <div class="form-group full-width notes-group">
+                    <label for="notes">ملاحظات</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="أدخل الملاحظات" autocomplete="off"></textarea>
+                </div>
+                <div class="form-actions create-form-footer">
+                    <div class="form-message" id="formMessage" aria-live="polite"></div>
+                    <button type="submit" class="primary-btn">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="app.js" defer></script>
+</body>
+</html>
