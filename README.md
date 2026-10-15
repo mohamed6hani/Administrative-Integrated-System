@@ -4,6 +4,12 @@ A modular administrative workflow platform with an Arabic RTL interface, shared 
 
 This repository contains a **standalone public demo with wholly fictional data**. Every supplied person, organization, office, record number and attachment is synthetic. It contains no institutional logos, production databases, original documents, private deployment settings or original repository history.
 
+## Project brief
+
+[Read the three-page project brief (PDF)](docs/Administrative-Integrated-System-Overview.pdf) · [Download PDF](https://github.com/mohamed6hani/Administrative-Integrated-System/raw/refs/heads/main/docs/Administrative-Integrated-System-Overview.pdf)
+
+Architecture, implemented workflows and screenshots using fictional demo records.
+
 ## Run locally
 
 Requires **Node.js 24–26** and npm. Node's built-in SQLite powers the native SQL stores; no Python or Microsoft Office installation is required for the demo.

@@ -17,6 +17,7 @@ backups/
 *.xlsx
 *.xls
 *.pdf
+!/docs/Administrative-Integrated-System-Overview.pdf
 *.pem
 *.key
 .env
